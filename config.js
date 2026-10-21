@@ -9,7 +9,7 @@ window.BARBEARIA_CONFIG = {
   nome: "Kaique & Ângelo",            // [CONFIRMAR] nome oficial da barbearia (Booksy / logo)
   nomeCurto: "Kaique e Ângelo",
   slogan: "Corte no detalhe. Horário no seu tempo.",
-  cidade: "São Paulo, Zona Leste",    // tirado do Instagram do Ângelo [CONFIRMAR]
+  cidade: "Zona Leste de SP",         // aparece como "na Zona Leste de SP" [CONFIRMAR bairro]
   endereco: "Rua Exemplo, 123, Centro", // [CONFIRMAR]
   instagram: "@suabarbearia",         // [CONFIRMAR]
   whatsapp: "(11) 90000-0000",        // [CONFIRMAR]
@@ -39,7 +39,7 @@ window.BARBEARIA_CONFIG = {
       instagram: "vn_barbeiiro",
       foto: "fotos/angelo-retrato.jpg",
       especialidades: ["Platinado", "Cacheado", "Moicano"],
-      bio: "Na Zona Leste de São Paulo, conhecido no Instagram como VN Barbeiro.",
+      bio: "Atende na Zona Leste e posta os cortes no Instagram como VN Barbeiro.",
       googleCalendarId: "angelo@exemplo.com",    // usado na automação futura
       jornada: {
         seg: [],
@@ -57,9 +57,9 @@ window.BARBEARIA_CONFIG = {
       desde: 2018,                               // [CONFIRMAR]
       papel: "Sócio · Barbeiro",
       instagram: "kaiquedoscorte",               // estúdio: @studio_kaiquedoscorte
-      foto: "fotos/kaique-retrato.jpg",          // foto de perfil do Instagram (só existe em 100px)
+      foto: "",                                  // sem foto boa ainda: mostra a inicial no lugar. Coloque aqui um retrato nítido (pelo menos 600px de largura)
       especialidades: ["Freestyle", "Navalhado", "Sobrancelha"],
-      bio: "Placeholder: como começou, o que mais gosta de fazer e o estilo de corte que é a assinatura dele.",
+      bio: "O K do logo é dele. Toca o estúdio que leva o nome, o Studio Kaique dos Corte.", // [CONFIRMAR] contar como começou e o corte que é a marca dele
       googleCalendarId: "kaique@exemplo.com",
       jornada: {
         seg: [["10:00", "19:00"]],
@@ -90,18 +90,16 @@ window.BARBEARIA_CONFIG = {
     { titulo: "Degradê no cacheado",  socio: "angelo", foto: "fotos/angelo-4.jpg" },
     { titulo: "Low fade, cabelo pra trás", socio: "kaique", foto: "fotos/kaique-1.jpg" },
     { titulo: "Moicano curtinho",     socio: "angelo", foto: "fotos/angelo-5.jpg" },
-    { titulo: "Platinado com franja", socio: "angelo", foto: "fotos/angelo-1.jpg" },
-    { titulo: "Freestyle lateral",    socio: "kaique", foto: "" },
-    { titulo: "Cacheado com fade",    socio: "angelo", foto: "fotos/angelo-3.jpg" },
-    { titulo: "Platinado, lateral",   socio: "angelo", foto: "fotos/angelo-2.jpg" },
-    { titulo: "Taper + sobrancelha",  socio: "kaique", foto: "" }
+    { titulo: "Platinado com franja", socio: "angelo", foto: "fotos/angelo-2.jpg" }
+    // Fora por enquanto: fotos borradas ou faltando (angelo-1, angelo-3, freestyle e taper do Kaique).
+    // Só volte com fotos nítidas, de pelo menos 720px de largura.
   ],
 
   // História: marcos reais entram aqui
   historia: [
-    { ano: 2018, texto: "Kaique entra na profissão. [CONFIRMAR]" },
-    { ano: 2019, texto: "Abre o estúdio. [CONFIRMAR]" },
+    { ano: 2018, texto: "Kaique pega na máquina pela primeira vez." }, // [CONFIRMAR]
+    { ano: 2019, texto: "Abre o estúdio no bairro." }, // [CONFIRMAR]
     { ano: 2023, texto: "Ângelo começa a cortar." },
-    { ano: 2026, texto: "Os dois juntos na mesma cadeira. [CONFIRMAR]" }
+    { ano: 2026, texto: "Os dois passam a dividir o mesmo espaço." } // [CONFIRMAR]
   ]
 };

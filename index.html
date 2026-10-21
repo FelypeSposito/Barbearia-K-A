@@ -7,7 +7,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300;6..72,400&family=Hanken+Grotesk:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@300;400&family=Grenze:wght@300;400;500;600&display=swap">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -18,9 +18,9 @@
   <div class="topbar-in">
     <a class="brand" href="#inicio" aria-label="Início" data-bind="nome">Kaique &amp; Ângelo</a>
     <nav class="nav" aria-label="Principal">
-      <a href="#trabalhos">Trabalhos</a>
-      <a href="#socios">Quem corta</a>
       <a href="#precos">Preços</a>
+      <a href="#socios">Quem corta</a>
+      <a href="#trabalhos">Cortes</a>
       <a href="#conta" data-view="conta">Minha conta</a>
       <a href="#painel" data-view="painel">Painel</a>
     </nav>
@@ -42,7 +42,7 @@
           <button class="cal-nav" type="button" id="cal-next" aria-label="Próximo mês">›</button>
         </div>
         <div class="cal-grid" id="cal-grid" role="grid"></div>
-        <p class="cal-note">Só os dias com horário aparecem para escolher.</p>
+        <p class="cal-note">Só aparecem os dias que ainda têm vaga.</p>
       </div>
       <div class="cal-day" id="cal-day"></div>
     </div>
@@ -50,9 +50,9 @@
 </header>
 
 <nav class="mnav" id="mnav" aria-label="Menu" hidden>
-  <a href="#trabalhos">Trabalhos</a>
-  <a href="#socios">Quem corta</a>
   <a href="#precos">Preços</a>
+  <a href="#socios">Quem corta</a>
+  <a href="#trabalhos">Cortes</a>
   <a href="#conta">Minha conta</a>
   <a href="#painel">Painel</a>
   <p class="mnav-foot"><span data-bind="endereco">Endereço</span><br><span data-bind="whatsapp">-</span></p>
@@ -61,40 +61,59 @@
 <!-- ======================= SITE ======================= -->
 <main id="view-site" class="view">
 
+  <!-- placa: o logo do estúdio abre a página, preto como no Instagram -->
   <section class="hero" id="inicio">
-    <div class="wrap hero-in">
-      <div class="hero-text">
-        <h1 class="hero-title">Corte com calma,<br>feito por quem conhece você.</h1>
-        <p class="lead">Barbearia de <span data-bind="nomeCurto">Kaique e Ângelo</span> em <span data-bind="cidade">sua cidade</span>, desde <span data-bind="desde">2019</span>.</p>
-        <div class="hero-actions">
-          <button class="btn" data-open-booking type="button">Agendar horário</button>
-          <p class="next" id="proximo"></p>
+    <div class="wrap">
+      <div class="placa hero-in">
+        <div class="hero-photo">
+          <div class="hero-photo-in" data-parallax><div class="ph" data-ph="Foto principal"></div></div>
         </div>
-      </div>
-      <div class="hero-photo">
-        <div class="hero-photo-in" data-parallax><div class="ph" data-ph="Foto principal"></div></div>
+        <div class="hero-text">
+          <h1 class="hero-title">Corte na régua,<br>sem ficar esperando.</h1>
+          <p class="lead">Barbearia de <span data-bind="nomeCurto">Kaique e Ângelo</span> na <span data-bind="cidade">quebrada</span>. Escolhe o horário aqui e chega na hora certa.</p>
+          <div class="hero-actions">
+            <button class="btn" data-open-booking type="button">Agendar horário</button>
+            <p class="next" id="proximo"></p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="block" id="trabalhos">
-    <div class="wrap">
-      <div class="head-row">
-        <h2 class="h2">Trabalhos</h2>
-        <div class="seg" role="tablist" aria-label="Filtrar por sócio" id="filtro-trabalhos"></div>
+  <!-- faixa com os cortes da casa, anda de lado com a rolagem -->
+  <div class="faixa" aria-hidden="true"><div class="faixa-in" id="faixa-1" data-speed="-0.35" data-axis="x"></div></div>
+
+  <!-- tabela de preços logo em seguida, como a placa na parede da barbearia -->
+  <section class="block" id="precos">
+    <div class="wrap price-wrap">
+      <h2 class="h2">Preços</h2>
+      <div>
+        <ul class="prices" id="lista-servicos"></ul>
+        <p class="muted small price-foot">Toca no serviço pra agendar. <a class="link" id="booksy-link" href="#" target="_blank" rel="noopener">Se preferir, ainda dá pelo Booksy.</a></p>
       </div>
-      <div class="works" id="works"></div>
     </div>
   </section>
 
   <section class="block" id="socios">
+    <span class="marca" aria-hidden="true" data-speed="-0.18">K</span>
     <div class="wrap">
       <h2 class="h2">Quem corta</h2>
       <div class="socios" id="socios-grid"></div>
     </div>
   </section>
 
-  <section class="block">
+  <section class="block block-last" id="trabalhos">
+    <div class="wrap">
+      <div class="head-row">
+        <h2 class="h2">Cortes</h2>
+        <div class="seg" role="tablist" aria-label="Filtrar por sócio" id="filtro-trabalhos"></div>
+      </div>
+      <div class="works" id="works"></div>
+    </div>
+  </section>
+
+  <!-- antes e depois: escondido até ter fotos reais boas (tirar o hidden) -->
+  <section class="block block-last" id="antes-depois" hidden>
     <div class="wrap ba-grid">
       <div class="ba-copy">
         <h2 class="h2">Antes e depois</h2>
@@ -109,31 +128,32 @@
     </div>
   </section>
 
-  <section class="block" id="historia">
-    <div class="wrap">
-      <h2 class="h2">Desde <span data-bind="desde">2019</span></h2>
-      <ol class="timeline" id="timeline"></ol>
-    </div>
-  </section>
+  <div class="faixa faixa-2" aria-hidden="true"><div class="faixa-in" id="faixa-2" data-speed="0.3" data-axis="x"></div></div>
 
-  <section class="block block-last" id="precos">
-    <div class="wrap price-wrap">
-      <h2 class="h2">Preços</h2>
-      <div>
-        <ul class="prices" id="lista-servicos"></ul>
-        <p class="muted small price-foot">Toque num serviço para agendar. <a class="link" id="booksy-link" href="#" target="_blank" rel="noopener">Também dá pelo Booksy.</a></p>
+  <!-- fecha com outra placa preta: história e onde fica -->
+  <section class="fim" id="historia">
+    <div class="wrap">
+      <div class="placa fim-in">
+        <span class="marca marca-fim" aria-hidden="true" data-speed="0.12">K</span>
+        <h2 class="h2">Desde <span data-bind="desde">2019</span></h2>
+        <ol class="timeline" id="timeline"></ol>
+        <div class="visite">
+          <dl class="contato">
+            <div><dt>Endereço</dt><dd data-bind="endereco">Endereço</dd></div>
+            <div><dt>WhatsApp</dt><dd data-bind="whatsapp">-</dd></div>
+            <div><dt>Instagram</dt><dd data-bind="instagram">@</dd></div>
+          </dl>
+          <button class="btn" data-open-booking type="button">Agendar horário</button>
+        </div>
       </div>
     </div>
+    <footer class="footer">
+      <div class="wrap foot-in">
+        <span data-bind="nome">Kaique &amp; Ângelo</span>
+        <a class="link" href="https://www.instagram.com/studio_kaiquedoscorte/" target="_blank" rel="noopener">Studio Kaique dos Corte</a>
+      </div>
+    </footer>
   </section>
-
-  <footer class="footer">
-    <div class="wrap foot-in">
-      <span data-bind="nome">Kaique &amp; Ângelo</span>
-      <span data-bind="endereco">Endereço</span>
-      <span data-bind="instagram">@</span>
-      <span data-bind="whatsapp">-</span>
-    </div>
-  </footer>
 </main>
 
 <!-- ======================= CONTA DO CLIENTE ======================= -->

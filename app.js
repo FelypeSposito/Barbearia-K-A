@@ -173,9 +173,9 @@
       const esp = s.especialidades.map(e => e.toLowerCase());
       const lista = esp.length > 1 ? esp.slice(0, -1).join(", ") + " e " + esp[esp.length - 1] : esp[0];
       return `<article class="socio">
-        <div class="socio-photo">${phHtml("Retrato de " + s.nome, s.foto)}</div>
+        <div class="socio-photo">${s.foto ? phHtml("Retrato de " + s.nome, s.foto) : `<div class="ph ph-inicial" role="img" aria-label="${esc(s.nome)}, foto em breve"><span aria-hidden="true">${esc(s.nome.charAt(0))}</span></div>`}</div>
         <h3 class="socio-name">${esc(s.nome)}</h3>
-        <p>Corta desde ${s.desde}. Mão boa para ${esc(lista)}.</p>
+        <p>Na máquina desde ${s.desde}. Manda bem em ${esc(lista)}.</p>
         <p>${esc(s.bio)}</p>
         <div class="socio-links">
           <button class="link" type="button" data-book-socio="${s.id}">Agendar com ${esc(s.nome)}</button>
@@ -183,6 +183,14 @@
         </div>
       </article>`;
     }).join("");
+  }
+
+  /* faixas góticas: os cortes da casa e o nome, separados pelo K do logo */
+  function renderFaixas() {
+    const esp = [...new Set(cfg.socios.flatMap(s => s.especialidades).concat(cfg.servicos.map(s => s.nome)))];
+    const linha = (palavras, n) => Array(n).fill(palavras.map(p => `<span>${esc(p)}</span><i>K</i>`).join("")).join("");
+    $("#faixa-1").innerHTML = linha(["Corte na régua"].concat(esp, [cfg.cidade]), 3);
+    $("#faixa-2").innerHTML = linha([cfg.nome, "Studio Kaique dos Corte", "Desde " + cfg.desde, cfg.cidade], 5);
   }
 
   function renderHistoria() {
@@ -219,7 +227,7 @@
     const first = Object.keys(cal.days)[0];
     let best = null;
     if (first) cfg.socios.forEach(s => { const f = cal.days[first][s.id]; if (f.length && (!best || f[0] < best.t)) best = { t: f[0], s }; });
-    $("#proximo").textContent = best ? `Próximo horário livre: ${dayLabel(first).toLowerCase()}, ${fmt(best.t)}, com ${best.s.nome}.` : "";
+    $("#proximo").textContent = best ? `Próxima vaga: ${dayLabel(first).toLowerCase()}, ${fmt(best.t)}, com o ${best.s.nome}.` : "";
     $("#when-text").textContent = best ? `${dayLabel(first)}, ${fmt(best.t)}` : "Datas livres";
     $("#mbar-when").textContent = best ? `${dayLabel(first)}, ${fmt(best.t)}` : "Ver datas livres";
     if (!cal.sel || !cal.days[cal.sel]) cal.sel = first || null;
@@ -319,7 +327,7 @@
 
   /* parallax da foto do topo, poste de barbeiro e botão flutuante */
   function initScroll() {
-    const media = $("[data-parallax]"), bar = $("#topbar"), fab = $("#mbar"), photo = $(".hero-photo"), stripes = $("#pole-stripes");
+    const media = $("[data-parallax]"), bar = $("#topbar"), fab = $("#mbar"), photo = $("#inicio"), stripes = $("#pole-stripes");
     const PERIOD = 40; // altura de um ciclo das listras (-60deg, 20px)
     let target = 0, cur = 0, spinning = false, ticking = false;
     const spin = () => {
@@ -328,12 +336,31 @@
       stripes.style.transform = `translate3d(0, ${(cur % PERIOD) - PERIOD}px, 0)`;
       if (cur !== target) requestAnimationFrame(spin); else spinning = false;
     };
+    // parallax: cada [data-speed] anda conforme a distância do centro da tela; fotos andam dentro da moldura
+    const mob = matchMedia("(max-width: 760px)");
+    const parallax = () => {
+      const k = mob.matches ? 0.5 : 1, mid = innerHeight / 2;
+      $$("#view-site [data-speed]").forEach(el => {
+        const r = el.parentElement.getBoundingClientRect();
+        if (r.bottom < -100 || r.top > innerHeight + 100) return;
+        const d = (r.top + r.height / 2 - mid) * el.dataset.speed * k;
+        el.style.translate = el.dataset.axis === "x" ? `${d}px 0` : `0 ${d}px`;
+      });
+      $$("#view-site .work-img .ph, #view-site .socio-photo .ph").forEach(el => {
+        const r = el.parentElement.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > innerHeight) return;
+        const room = r.height * 0.05;
+        const d = Math.max(-room, Math.min(room, (r.top + r.height / 2 - mid) * -0.06 * k));
+        el.style.translate = `0 ${d}px`;
+      });
+    };
     const run = () => {
       const y = scrollY;
       bar.classList.toggle("scrolled", y > 8);
       if (!reduce) { target = y * 0.35; if (!spinning) { spinning = true; requestAnimationFrame(spin); } }
       if (currentView === "site") {
         if (!reduce && y < innerHeight * 1.5) media.style.transform = `translate3d(0, ${y * 0.08}px, 0)`;
+        if (!reduce) parallax();
         fab.classList.toggle("show", y > photo.offsetTop + photo.offsetHeight);
       }
       ticking = false;
@@ -769,6 +796,7 @@
   bindTexts();
   renderWorks();
   renderHistoria();
+  renderFaixas();
   renderServicos();
   refreshSite();
   railDots($("#works")); railDots($("#socios-grid"));
