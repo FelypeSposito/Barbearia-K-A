@@ -18,9 +18,9 @@
   <div class="topbar-in">
     <a class="brand" href="#inicio" aria-label="Início" data-bind="nome">Kaique &amp; Ângelo</a>
     <nav class="nav" aria-label="Principal">
-      <a href="#trabalhos">Trabalhos</a>
-      <a href="#socios">Quem corta</a>
       <a href="#precos">Preços</a>
+      <a href="#socios">Quem corta</a>
+      <a href="#trabalhos">Trabalhos</a>
       <a href="#conta" data-view="conta">Minha conta</a>
       <a href="#painel" data-view="painel">Painel</a>
     </nav>
@@ -50,9 +50,9 @@
 </header>
 
 <nav class="mnav" id="mnav" aria-label="Menu" hidden>
-  <a href="#trabalhos">Trabalhos</a>
-  <a href="#socios">Quem corta</a>
   <a href="#precos">Preços</a>
+  <a href="#socios">Quem corta</a>
+  <a href="#trabalhos">Trabalhos</a>
   <a href="#conta">Minha conta</a>
   <a href="#painel">Painel</a>
   <p class="mnav-foot"><span data-bind="endereco">Endereço</span><br><span data-bind="whatsapp">-</span></p>
@@ -61,19 +61,40 @@
 <!-- ======================= SITE ======================= -->
 <main id="view-site" class="view">
 
+  <!-- placa: o logo do estúdio abre a página, preto como no Instagram -->
   <section class="hero" id="inicio">
-    <div class="wrap hero-in">
-      <div class="hero-text">
-        <h1 class="hero-title">Corte com calma,<br>feito por quem conhece você.</h1>
-        <p class="lead">Barbearia de <span data-bind="nomeCurto">Kaique e Ângelo</span> em <span data-bind="cidade">sua cidade</span>, desde <span data-bind="desde">2019</span>.</p>
-        <div class="hero-actions">
-          <button class="btn" data-open-booking type="button">Agendar horário</button>
-          <p class="next" id="proximo"></p>
+    <div class="wrap">
+      <div class="placa hero-in">
+        <div class="hero-photo">
+          <div class="hero-photo-in" data-parallax><div class="ph" data-ph="Foto principal"></div></div>
+        </div>
+        <div class="hero-text">
+          <h1 class="hero-title">Corte com calma,<br>feito por quem conhece você.</h1>
+          <p class="lead">Barbearia de <span data-bind="nomeCurto">Kaique e Ângelo</span> em <span data-bind="cidade">sua cidade</span>, desde <span data-bind="desde">2019</span>.</p>
+          <div class="hero-actions">
+            <button class="btn" data-open-booking type="button">Agendar horário</button>
+            <p class="next" id="proximo"></p>
+          </div>
         </div>
       </div>
-      <div class="hero-photo">
-        <div class="hero-photo-in" data-parallax><div class="ph" data-ph="Foto principal"></div></div>
+    </div>
+  </section>
+
+  <!-- tabela de preços logo em seguida, como a placa na parede da barbearia -->
+  <section class="block" id="precos">
+    <div class="wrap price-wrap">
+      <h2 class="h2">Preços</h2>
+      <div>
+        <ul class="prices" id="lista-servicos"></ul>
+        <p class="muted small price-foot">Toque num serviço para agendar. <a class="link" id="booksy-link" href="#" target="_blank" rel="noopener">Também dá pelo Booksy.</a></p>
       </div>
+    </div>
+  </section>
+
+  <section class="block" id="socios">
+    <div class="wrap">
+      <h2 class="h2">Quem corta</h2>
+      <div class="socios" id="socios-grid"></div>
     </div>
   </section>
 
@@ -87,14 +108,7 @@
     </div>
   </section>
 
-  <section class="block" id="socios">
-    <div class="wrap">
-      <h2 class="h2">Quem corta</h2>
-      <div class="socios" id="socios-grid"></div>
-    </div>
-  </section>
-
-  <section class="block">
+  <section class="block block-last">
     <div class="wrap ba-grid">
       <div class="ba-copy">
         <h2 class="h2">Antes e depois</h2>
@@ -109,31 +123,28 @@
     </div>
   </section>
 
-  <section class="block" id="historia">
+  <!-- fecha com outra placa preta: história e onde fica -->
+  <section class="fim" id="historia">
     <div class="wrap">
-      <h2 class="h2">Desde <span data-bind="desde">2019</span></h2>
-      <ol class="timeline" id="timeline"></ol>
-    </div>
-  </section>
-
-  <section class="block block-last" id="precos">
-    <div class="wrap price-wrap">
-      <h2 class="h2">Preços</h2>
-      <div>
-        <ul class="prices" id="lista-servicos"></ul>
-        <p class="muted small price-foot">Toque num serviço para agendar. <a class="link" id="booksy-link" href="#" target="_blank" rel="noopener">Também dá pelo Booksy.</a></p>
+      <div class="placa fim-in">
+        <h2 class="h2">Desde <span data-bind="desde">2019</span></h2>
+        <ol class="timeline" id="timeline"></ol>
+        <div class="visite">
+          <dl class="contato">
+            <div><dt>Endereço</dt><dd data-bind="endereco">Endereço</dd></div>
+            <div><dt>WhatsApp</dt><dd data-bind="whatsapp">-</dd></div>
+            <div><dt>Instagram</dt><dd data-bind="instagram">@</dd></div>
+          </dl>
+          <button class="btn" data-open-booking type="button">Agendar horário</button>
+        </div>
       </div>
     </div>
+    <footer class="footer">
+      <div class="wrap foot-in">
+        <span data-bind="nome">Kaique &amp; Ângelo</span>
+      </div>
+    </footer>
   </section>
-
-  <footer class="footer">
-    <div class="wrap foot-in">
-      <span data-bind="nome">Kaique &amp; Ângelo</span>
-      <span data-bind="endereco">Endereço</span>
-      <span data-bind="instagram">@</span>
-      <span data-bind="whatsapp">-</span>
-    </div>
-  </footer>
 </main>
 
 <!-- ======================= CONTA DO CLIENTE ======================= -->

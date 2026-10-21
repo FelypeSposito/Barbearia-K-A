@@ -319,7 +319,7 @@
 
   /* parallax da foto do topo, poste de barbeiro e botão flutuante */
   function initScroll() {
-    const media = $("[data-parallax]"), bar = $("#topbar"), fab = $("#mbar"), photo = $(".hero-photo"), stripes = $("#pole-stripes");
+    const media = $("[data-parallax]"), bar = $("#topbar"), fab = $("#mbar"), photo = $("#inicio"), stripes = $("#pole-stripes");
     const PERIOD = 40; // altura de um ciclo das listras (-60deg, 20px)
     let target = 0, cur = 0, spinning = false, ticking = false;
     const spin = () => {
