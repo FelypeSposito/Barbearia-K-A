@@ -20,7 +20,7 @@
     <nav class="nav" aria-label="Principal">
       <a href="#precos">Preços</a>
       <a href="#socios">Quem corta</a>
-      <a href="#trabalhos">Trabalhos</a>
+      <a href="#trabalhos">Cortes</a>
       <a href="#conta" data-view="conta">Minha conta</a>
       <a href="#painel" data-view="painel">Painel</a>
     </nav>
@@ -42,7 +42,7 @@
           <button class="cal-nav" type="button" id="cal-next" aria-label="Próximo mês">›</button>
         </div>
         <div class="cal-grid" id="cal-grid" role="grid"></div>
-        <p class="cal-note">Só os dias com horário aparecem para escolher.</p>
+        <p class="cal-note">Só aparecem os dias que ainda têm vaga.</p>
       </div>
       <div class="cal-day" id="cal-day"></div>
     </div>
@@ -52,7 +52,7 @@
 <nav class="mnav" id="mnav" aria-label="Menu" hidden>
   <a href="#precos">Preços</a>
   <a href="#socios">Quem corta</a>
-  <a href="#trabalhos">Trabalhos</a>
+  <a href="#trabalhos">Cortes</a>
   <a href="#conta">Minha conta</a>
   <a href="#painel">Painel</a>
   <p class="mnav-foot"><span data-bind="endereco">Endereço</span><br><span data-bind="whatsapp">-</span></p>
@@ -69,8 +69,8 @@
           <div class="hero-photo-in" data-parallax><div class="ph" data-ph="Foto principal"></div></div>
         </div>
         <div class="hero-text">
-          <h1 class="hero-title">Corte com calma,<br>feito por quem conhece você.</h1>
-          <p class="lead">Barbearia de <span data-bind="nomeCurto">Kaique e Ângelo</span> em <span data-bind="cidade">sua cidade</span>, desde <span data-bind="desde">2019</span>.</p>
+          <h1 class="hero-title">Corte na régua,<br>sem ficar esperando.</h1>
+          <p class="lead">Barbearia de <span data-bind="nomeCurto">Kaique e Ângelo</span> na <span data-bind="cidade">quebrada</span>. Escolhe o horário aqui e chega na hora certa.</p>
           <div class="hero-actions">
             <button class="btn" data-open-booking type="button">Agendar horário</button>
             <p class="next" id="proximo"></p>
@@ -86,7 +86,7 @@
       <h2 class="h2">Preços</h2>
       <div>
         <ul class="prices" id="lista-servicos"></ul>
-        <p class="muted small price-foot">Toque num serviço para agendar. <a class="link" id="booksy-link" href="#" target="_blank" rel="noopener">Também dá pelo Booksy.</a></p>
+        <p class="muted small price-foot">Toca no serviço pra agendar. <a class="link" id="booksy-link" href="#" target="_blank" rel="noopener">Se preferir, ainda dá pelo Booksy.</a></p>
       </div>
     </div>
   </section>
@@ -98,17 +98,18 @@
     </div>
   </section>
 
-  <section class="block" id="trabalhos">
+  <section class="block block-last" id="trabalhos">
     <div class="wrap">
       <div class="head-row">
-        <h2 class="h2">Trabalhos</h2>
+        <h2 class="h2">Cortes</h2>
         <div class="seg" role="tablist" aria-label="Filtrar por sócio" id="filtro-trabalhos"></div>
       </div>
       <div class="works" id="works"></div>
     </div>
   </section>
 
-  <section class="block block-last">
+  <!-- antes e depois: escondido até ter fotos reais boas (tirar o hidden) -->
+  <section class="block block-last" id="antes-depois" hidden>
     <div class="wrap ba-grid">
       <div class="ba-copy">
         <h2 class="h2">Antes e depois</h2>

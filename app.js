@@ -173,9 +173,9 @@
       const esp = s.especialidades.map(e => e.toLowerCase());
       const lista = esp.length > 1 ? esp.slice(0, -1).join(", ") + " e " + esp[esp.length - 1] : esp[0];
       return `<article class="socio">
-        <div class="socio-photo">${phHtml("Retrato de " + s.nome, s.foto)}</div>
+        <div class="socio-photo">${s.foto ? phHtml("Retrato de " + s.nome, s.foto) : `<div class="ph ph-inicial" role="img" aria-label="${esc(s.nome)}, foto em breve"><span aria-hidden="true">${esc(s.nome.charAt(0))}</span></div>`}</div>
         <h3 class="socio-name">${esc(s.nome)}</h3>
-        <p>Corta desde ${s.desde}. Mão boa para ${esc(lista)}.</p>
+        <p>Na máquina desde ${s.desde}. Manda bem em ${esc(lista)}.</p>
         <p>${esc(s.bio)}</p>
         <div class="socio-links">
           <button class="link" type="button" data-book-socio="${s.id}">Agendar com ${esc(s.nome)}</button>
@@ -219,7 +219,7 @@
     const first = Object.keys(cal.days)[0];
     let best = null;
     if (first) cfg.socios.forEach(s => { const f = cal.days[first][s.id]; if (f.length && (!best || f[0] < best.t)) best = { t: f[0], s }; });
-    $("#proximo").textContent = best ? `Próximo horário livre: ${dayLabel(first).toLowerCase()}, ${fmt(best.t)}, com ${best.s.nome}.` : "";
+    $("#proximo").textContent = best ? `Próxima vaga: ${dayLabel(first).toLowerCase()}, ${fmt(best.t)}, com o ${best.s.nome}.` : "";
     $("#when-text").textContent = best ? `${dayLabel(first)}, ${fmt(best.t)}` : "Datas livres";
     $("#mbar-when").textContent = best ? `${dayLabel(first)}, ${fmt(best.t)}` : "Ver datas livres";
     if (!cal.sel || !cal.days[cal.sel]) cal.sel = first || null;

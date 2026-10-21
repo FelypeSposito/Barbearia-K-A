@@ -453,3 +453,9 @@ label.lbl { display: block; font-size: 14px; margin-bottom: 8px; color: var(--gr
 .rail-dots { display: none; }
 .rail-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); transition: background .3s, width .4s var(--ease); }
 .rail-dots i.on { background: var(--ink); width: 18px; border-radius: 3px; }
+
+/* sócio ainda sem foto boa: a inicial em gótico, no mesmo preto do logo */
+.ph-inicial { background: var(--sign); color: var(--on-sign); display: grid; place-items: center; }
+.ph-inicial span { font-family: var(--goth); font-weight: 400; font-size: clamp(72px, 12vw, 180px); line-height: 1; transform: translateY(-4%); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ph-inicial { box-shadow: inset 0 0 0 1px var(--sign-edge); } }
+:root[data-theme="dark"] .ph-inicial { box-shadow: inset 0 0 0 1px var(--sign-edge); }
