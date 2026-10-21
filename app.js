@@ -149,6 +149,11 @@
     $$("[data-bind]").forEach(el => { const v = cfg[el.dataset.bind]; if (v != null) el.textContent = v; });
     if (cfg.fotoPrincipal) $(".hero-photo .ph").outerHTML = phHtml("Foto principal", cfg.fotoPrincipal);
     $("#booksy-link").href = cfg.booksyUrl;
+    // contato vira ação: WhatsApp abre a conversa, endereço abre o mapa, Instagram abre o perfil
+    const zap = String(cfg.whatsapp || "").replace(/\D/g, "");
+    $$("[data-href=whatsapp]").forEach(a => (a.href = "https://wa.me/" + (zap.length <= 11 ? "55" : "") + zap));
+    $$("[data-href=endereco]").forEach(a => (a.href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(cfg.endereco + ", " + cfg.cidade)));
+    $$("[data-href=instagram]").forEach(a => (a.href = "https://www.instagram.com/" + encodeURIComponent(String(cfg.instagram).replace("@", "")) + "/"));
     document.title = cfg.nome + " Barbearia";
   }
 
@@ -177,20 +182,13 @@
         <h3 class="socio-name">${esc(s.nome)}</h3>
         <p>Na máquina desde ${s.desde}. Manda bem em ${esc(lista)}.</p>
         <p>${esc(s.bio)}</p>
+        ${(nf => nf ? `<p class="socio-next">Próximo horário: <b>${dayLabel(nf.date).toLowerCase()}, ${fmt(nf.time)}</b></p>` : `<p class="socio-next">Sem horário livre nos próximos dias</p>`)(nextFree(s.id, corteDur()))}
         <div class="socio-links">
-          <button class="link" type="button" data-book-socio="${s.id}">Agendar com ${esc(s.nome)}</button>
+          <button class="btn btn-line btn-sm" type="button" data-book-socio="${s.id}">Agendar com ${esc(s.nome)}</button>
           ${s.instagram ? `<a class="link muted" href="https://www.instagram.com/${encodeURIComponent(s.instagram)}/" target="_blank" rel="noopener">@${esc(s.instagram)}</a>` : ""}
         </div>
       </article>`;
     }).join("");
-  }
-
-  /* faixas góticas: os cortes da casa e o nome, separados pelo K do logo */
-  function renderFaixas() {
-    const esp = [...new Set(cfg.socios.flatMap(s => s.especialidades).concat(cfg.servicos.map(s => s.nome)))];
-    const linha = (palavras, n) => Array(n).fill(palavras.map(p => `<span>${esc(p)}</span><i>K</i>`).join("")).join("");
-    $("#faixa-1").innerHTML = linha(["Corte na régua"].concat(esp, [cfg.cidade]), 3);
-    $("#faixa-2").innerHTML = linha([cfg.nome, "Studio Kaique dos Corte", "Desde " + cfg.desde, cfg.cidade], 5);
   }
 
   function renderHistoria() {
@@ -204,6 +202,7 @@
         <span class="price-n">${esc(s.nome)}<small>${s.duracao} min${quem}</small></span>
         <span class="price-dots" aria-hidden="true"></span>
         <span class="price-v">R$ ${s.preco}</span>
+        <svg class="price-go" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button></li>`;
     }).join("");
   }
@@ -227,13 +226,36 @@
     const first = Object.keys(cal.days)[0];
     let best = null;
     if (first) cfg.socios.forEach(s => { const f = cal.days[first][s.id]; if (f.length && (!best || f[0] < best.t)) best = { t: f[0], s }; });
-    $("#proximo").textContent = best ? `Próxima vaga: ${dayLabel(first).toLowerCase()}, ${fmt(best.t)}, com o ${best.s.nome}.` : "";
-    $("#when-text").textContent = best ? `${dayLabel(first)}, ${fmt(best.t)}` : "Datas livres";
+    renderVagas(first);
     $("#mbar-when").textContent = best ? `${dayLabel(first)}, ${fmt(best.t)}` : "Ver datas livres";
     if (!cal.sel || !cal.days[cal.sel]) cal.sel = first || null;
     if (!cal.month) { const d = first ? fromIso(first) : today(); cal.month = new Date(d.getFullYear(), d.getMonth(), 1); }
     if (!$("#cal").hidden) renderCal();
   }
+  /* abertura: os horários livres do primeiro dia com vaga, um toque e já vai pra confirmação */
+  function renderVagas(first) {
+    const box = $("#vagas");
+    if (!first) { box.innerHTML = `<p class="vagas-off">Agenda cheia nos próximos ${cfg.agendamento.diasAFrente} dias. <a class="link" href="${esc(cfg.booksyUrl)}" target="_blank" rel="noopener">Ver no Booksy</a></p>`; return; }
+    const dia = dayLabel(first);
+    const titulo = dia === "Hoje" || dia === "Amanhã" ? "Livres " + dia.toLowerCase() : "Próximos livres: " + dia.toLowerCase();
+    box.innerHTML = `<h2 class="vagas-t">${titulo}</h2>` + cfg.socios.map(s => {
+      const f = cal.days[first][s.id] || [];
+      let chips;
+      if (f.length) chips = f.slice(0, 4).map(t => `<button type="button" class="time" data-quick="${s.id}|${first}|${t}" aria-label="${esc(s.nome)}, ${dia.toLowerCase()} às ${fmt(t)}">${fmt(t)}</button>`).join("")
+        + (f.length > 4 ? `<button type="button" class="time time-more" data-book-socio="${s.id}">+${f.length - 4}</button>` : "");
+      else {
+        const nf = nextFree(s.id, corteDur());
+        chips = nf ? `<span class="off">${(s.jornada[DK[fromIso(first).getDay()]] || []).length ? "Cheio" : "De folga"} ${dia === "Hoje" ? "hoje" : "nesse dia"}.</span><button type="button" class="time" data-quick="${s.id}|${nf.date}|${nf.time}">${dayLabel(nf.date)}, ${fmt(nf.time)}</button>`
+          : `<span class="off">Sem vagas</span>`;
+      }
+      return `<div class="vagas-row"><span class="vagas-n">${esc(s.nome)}</span><div class="times">${chips}</div></div>`;
+    }).join("");
+  }
+  document.addEventListener("click", e => {
+    const t = e.target.closest("[data-quick]"); if (!t) return;
+    const [id, ds, tm] = t.dataset.quick.split("|");
+    openBooking({ servico: (servById("corte") || cfg.servicos[0]).id, socio: id, assigned: id, date: ds, time: +tm, step: 3 });
+  });
   function renderCal() {
     const m = cal.month, y = m.getFullYear(), mo = m.getMonth();
     $("#cal-title").textContent = m.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
@@ -423,7 +445,9 @@
 
   function renderStep(dir) {
     const body = $("#sheet-body"), foot = $("#sheet-foot");
-    $("#steps").textContent = bk.step < 4 ? `Passo ${bk.step + 1} de ${STEPS.length}` : "";
+    const st = $("#steps");
+    st.innerHTML = bk.step < 4 ? STEPS.map((n, i) => `<i class="${i < bk.step ? "done" : i === bk.step ? "on" : ""}"></i>`).join("") : "";
+    st.setAttribute("aria-label", bk.step < 4 ? `Passo ${bk.step + 1} de ${STEPS.length}` : "");
     $("#sheet-title").textContent = bk.step < 4 ? STEPS[bk.step] : "Agendado";
     $("#sheet-back").style.visibility = bk.step > 0 && bk.step < 4 ? "visible" : "hidden";
     const html = [stepServico, stepSocio, stepHorario, stepDetalhes, stepSucesso][bk.step]();
@@ -451,6 +475,8 @@
     const user = store.get("user", null);
     let label = "Continuar";
     if (last) label = cfg.agendamento.modo === "booksy" ? "Finalizar no Booksy" : (cfg.agendamento.exigirLogin && !user ? "Entrar e confirmar" : "Confirmar agendamento");
+    // nos dois primeiros passos tocar na opção já avança, então não há botão parado no rodapé
+    if (bk.step < 2) { foot.innerHTML = `<span class="resume">${resumo() || "Toque no serviço que você quer."}</span>`; return; }
     foot.innerHTML = `<span class="resume">${resumo() || "Escolha um serviço para começar."}</span>
       <button class="btn" type="button" data-act="next" ${ok ? "" : "disabled"}>${label}</button>`;
   }
@@ -513,8 +539,11 @@
     const user = store.get("user", null);
     const prefs = store.get("prefs", "");
     const chips = ["Mesmo da última vez", "Mais baixo na lateral", "Só aparar", "Vou levar foto de referência", "Sem máquina em cima"];
-    return `<dl class="summary">
-        <div><dt>Serviço</dt><dd>${esc(servById(bk.servico).nome)}</dd></div>
+    // só oferece os serviços que cabem nesse horário com esse profissional
+    const cabem = cfg.servicos.filter(v => v.socios.includes(bk.assigned) && (v.id === bk.servico || freeSlots(bk.assigned, bk.date, v.duracao).includes(bk.time)));
+    const troca = cabem.length > 1 ? `<p class="lbl">Serviço</p><div class="serv-pick" role="radiogroup" aria-label="Serviço">${cabem.map(v => `<button type="button" role="radio" aria-checked="${v.id === bk.servico}" data-swap-serv="${v.id}"><span>${esc(v.nome)}</span><small>${brl(v.preco)}, ${v.duracao} min</small></button>`).join("")}</div>` : "";
+    return `${troca}<dl class="summary">
+        ${troca ? "" : `<div><dt>Serviço</dt><dd>${esc(servById(bk.servico).nome)}</dd></div>`}
         <div><dt>Com</dt><dd>${esc(socioById(bk.assigned).nome)}</dd></div>
         <div><dt>Quando</dt><dd>${dayLabel(bk.date)}, ${fmt(bk.time)}</dd></div>
         <div><dt>Valor</dt><dd>${brl(servById(bk.servico).preco)}</dd></div>
@@ -571,6 +600,7 @@
       $$(".slot", $("#sheet")).forEach(s => s.setAttribute("aria-pressed", s === t));
       renderFoot($("#sheet-foot")); return;
     }
+    if (d.swapServ) { bk.servico = d.swapServ; const y = $("#sheet-body").scrollTop; renderStep(); $(".step-anim").classList.remove("step-anim"); $("#sheet-body").scrollTop = y; return; }
     if (d.chip) { const ta = $("#bk-nota"); ta.value = (ta.value ? ta.value.trim() + ". " : "") + d.chip; bk.nota = ta.value; return; }
     if (d.act === "next") {
       if (bk.step === 3) { bk.nota = $("#bk-nota").value; confirmBooking(); return; }
@@ -796,7 +826,6 @@
   bindTexts();
   renderWorks();
   renderHistoria();
-  renderFaixas();
   renderServicos();
   refreshSite();
   railDots($("#works")); railDots($("#socios-grid"));

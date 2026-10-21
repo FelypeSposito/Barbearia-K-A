@@ -27,7 +27,7 @@
     <div class="top-actions">
       <button class="when" id="cal-toggle" type="button" aria-expanded="false" aria-controls="cal">
         <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><rect x="2.5" y="4" width="15" height="13" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 8h15M6.5 2.5v3M13.5 2.5v3" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>
-        <span id="when-text">Datas livres</span>
+        <span id="when-text">Horários livres</span>
       </button>
       <button class="btn btn-sm" data-open-booking type="button">Agendar</button>
       <button class="menu-btn" id="menu-btn" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="mnav"><span></span><span></span></button>
@@ -70,18 +70,16 @@
         </div>
         <div class="hero-text">
           <h1 class="hero-title">Corte na régua,<br>sem ficar esperando.</h1>
-          <p class="lead">Barbearia de <span data-bind="nomeCurto">Kaique e Ângelo</span> na <span data-bind="cidade">quebrada</span>. Escolhe o horário aqui e chega na hora certa.</p>
+          <p class="lead">Barbearia de <span data-bind="nomeCurto">Kaique e Ângelo</span> na <span data-bind="cidade">quebrada</span>. Toca num horário e confirma, leva menos de um minuto.</p>
+          <div class="vagas" id="vagas" aria-live="polite"></div>
           <div class="hero-actions">
-            <button class="btn" data-open-booking type="button">Agendar horário</button>
-            <p class="next" id="proximo"></p>
+            <button class="btn" data-open-booking type="button">Escolher serviço e horário</button>
+            <button class="link link-btn" type="button" data-cal-open>Ver outros dias</button>
           </div>
         </div>
       </div>
     </div>
   </section>
-
-  <!-- faixa com os cortes da casa, anda de lado com a rolagem -->
-  <div class="faixa" aria-hidden="true"><div class="faixa-in" id="faixa-1" data-speed="-0.35" data-axis="x"></div></div>
 
   <!-- tabela de preços logo em seguida, como a placa na parede da barbearia -->
   <section class="block" id="precos">
@@ -127,8 +125,6 @@
     </div>
   </section>
 
-  <div class="faixa faixa-2" aria-hidden="true"><div class="faixa-in" id="faixa-2" data-speed="0.3" data-axis="x"></div></div>
-
   <!-- fecha com outra placa preta: história e onde fica -->
   <section class="fim placa" id="historia">
     <div class="wrap">
@@ -137,9 +133,9 @@
         <ol class="timeline" id="timeline"></ol>
         <div class="visite">
           <dl class="contato">
-            <div><dt>Endereço</dt><dd data-bind="endereco">Endereço</dd></div>
-            <div><dt>WhatsApp</dt><dd data-bind="whatsapp">-</dd></div>
-            <div><dt>Instagram</dt><dd data-bind="instagram">@</dd></div>
+            <div><dt>Endereço</dt><dd><a class="link" data-href="endereco" target="_blank" rel="noopener" data-bind="endereco">Endereço</a></dd></div>
+            <div><dt>WhatsApp</dt><dd><a class="link" data-href="whatsapp" target="_blank" rel="noopener" data-bind="whatsapp">-</a></dd></div>
+            <div><dt>Instagram</dt><dd><a class="link" data-href="instagram" target="_blank" rel="noopener" data-bind="instagram">@</a></dd></div>
           </dl>
           <button class="btn" data-open-booking type="button">Agendar horário</button>
         </div>
