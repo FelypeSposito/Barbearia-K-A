@@ -80,6 +80,9 @@
     </div>
   </section>
 
+  <!-- faixa com os cortes da casa, anda de lado com a rolagem -->
+  <div class="faixa" aria-hidden="true"><div class="faixa-in" id="faixa-1" data-speed="-0.35" data-axis="x"></div></div>
+
   <!-- tabela de preços logo em seguida, como a placa na parede da barbearia -->
   <section class="block" id="precos">
     <div class="wrap price-wrap">
@@ -92,6 +95,7 @@
   </section>
 
   <section class="block" id="socios">
+    <span class="marca" aria-hidden="true" data-speed="-0.18">K</span>
     <div class="wrap">
       <h2 class="h2">Quem corta</h2>
       <div class="socios" id="socios-grid"></div>
@@ -124,10 +128,13 @@
     </div>
   </section>
 
+  <div class="faixa faixa-2" aria-hidden="true"><div class="faixa-in" id="faixa-2" data-speed="0.3" data-axis="x"></div></div>
+
   <!-- fecha com outra placa preta: história e onde fica -->
   <section class="fim" id="historia">
     <div class="wrap">
       <div class="placa fim-in">
+        <span class="marca marca-fim" aria-hidden="true" data-speed="0.12">K</span>
         <h2 class="h2">Desde <span data-bind="desde">2019</span></h2>
         <ol class="timeline" id="timeline"></ol>
         <div class="visite">
@@ -143,6 +150,7 @@
     <footer class="footer">
       <div class="wrap foot-in">
         <span data-bind="nome">Kaique &amp; Ângelo</span>
+        <a class="link" href="https://www.instagram.com/studio_kaiquedoscorte/" target="_blank" rel="noopener">Studio Kaique dos Corte</a>
       </div>
     </footer>
   </section>

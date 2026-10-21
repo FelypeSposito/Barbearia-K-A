@@ -185,6 +185,14 @@
     }).join("");
   }
 
+  /* faixas góticas: os cortes da casa e o nome, separados pelo K do logo */
+  function renderFaixas() {
+    const esp = [...new Set(cfg.socios.flatMap(s => s.especialidades).concat(cfg.servicos.map(s => s.nome)))];
+    const linha = (palavras, n) => Array(n).fill(palavras.map(p => `<span>${esc(p)}</span><i>K</i>`).join("")).join("");
+    $("#faixa-1").innerHTML = linha(["Corte na régua"].concat(esp, [cfg.cidade]), 3);
+    $("#faixa-2").innerHTML = linha([cfg.nome, "Studio Kaique dos Corte", "Desde " + cfg.desde, cfg.cidade], 5);
+  }
+
   function renderHistoria() {
     $("#timeline").innerHTML = cfg.historia.map(h => `<li><span class="ano">${h.ano}</span><span>${esc(h.texto)}</span></li>`).join("");
   }
@@ -328,12 +336,31 @@
       stripes.style.transform = `translate3d(0, ${(cur % PERIOD) - PERIOD}px, 0)`;
       if (cur !== target) requestAnimationFrame(spin); else spinning = false;
     };
+    // parallax: cada [data-speed] anda conforme a distância do centro da tela; fotos andam dentro da moldura
+    const mob = matchMedia("(max-width: 760px)");
+    const parallax = () => {
+      const k = mob.matches ? 0.5 : 1, mid = innerHeight / 2;
+      $$("#view-site [data-speed]").forEach(el => {
+        const r = el.parentElement.getBoundingClientRect();
+        if (r.bottom < -100 || r.top > innerHeight + 100) return;
+        const d = (r.top + r.height / 2 - mid) * el.dataset.speed * k;
+        el.style.translate = el.dataset.axis === "x" ? `${d}px 0` : `0 ${d}px`;
+      });
+      $$("#view-site .work-img .ph, #view-site .socio-photo .ph").forEach(el => {
+        const r = el.parentElement.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > innerHeight) return;
+        const room = r.height * 0.05;
+        const d = Math.max(-room, Math.min(room, (r.top + r.height / 2 - mid) * -0.06 * k));
+        el.style.translate = `0 ${d}px`;
+      });
+    };
     const run = () => {
       const y = scrollY;
       bar.classList.toggle("scrolled", y > 8);
       if (!reduce) { target = y * 0.35; if (!spinning) { spinning = true; requestAnimationFrame(spin); } }
       if (currentView === "site") {
         if (!reduce && y < innerHeight * 1.5) media.style.transform = `translate3d(0, ${y * 0.08}px, 0)`;
+        if (!reduce) parallax();
         fab.classList.toggle("show", y > photo.offsetTop + photo.offsetHeight);
       }
       ticking = false;
@@ -769,6 +796,7 @@
   bindTexts();
   renderWorks();
   renderHistoria();
+  renderFaixas();
   renderServicos();
   refreshSite();
   railDots($("#works")); railDots($("#socios-grid"));
