@@ -13,13 +13,14 @@ window.BARBEARIA_CONFIG = {
   endereco: "Rua Exemplo, 123, Centro", // [CONFIRMAR]
   instagram: "@suabarbearia",         // [CONFIRMAR]
   whatsapp: "(11) 90000-0000",        // [CONFIRMAR]
+  fotoPrincipal: "fotos/studio-logo.jpg", // foto grande do início (logo do @studio_kaiquedoscorte)
   booksyUrl: "https://booksy.com/pt-br/instant-experiences/widget/347412",
   desde: 2019,                        // [CONFIRMAR] ano de abertura
   notaBooksy: "4,9",                  // [CONFIRMAR]
   avaliacoes: "300+",                 // [CONFIRMAR]
 
   agendamento: {
-    intervaloMin: 15,      // de quanto em quanto tempo abre um horário
+    intervaloMin: 60,      // de quanto em quanto tempo abre um horário (cortes de 1 em 1 hora)
     diasAFrente: 14,       // quantos dias o cliente enxerga
     antecedenciaMin: 60,   // não deixa agendar em cima da hora
     exigirLogin: true,     // pede "Entrar com Google" antes de confirmar
@@ -56,6 +57,7 @@ window.BARBEARIA_CONFIG = {
       desde: 2018,                               // [CONFIRMAR]
       papel: "Sócio · Barbeiro",
       instagram: "kaiquedoscorte",               // estúdio: @studio_kaiquedoscorte
+      foto: "fotos/kaique-retrato.jpg",          // foto de perfil do Instagram (só existe em 100px)
       especialidades: ["Freestyle", "Navalhado", "Sobrancelha"],
       bio: "Placeholder: como começou, o que mais gosta de fazer e o estilo de corte que é a assinatura dele.",
       googleCalendarId: "kaique@exemplo.com",

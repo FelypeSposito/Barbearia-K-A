@@ -63,6 +63,7 @@
     const ranges = s.jornada[DK[d.getDay()]] || [];
     const list = [];
     const servs = cfg.servicos.filter(v => v.socios.includes(socioId));
+    const step = cfg.agendamento.intervaloMin;
     ranges.forEach(([a, b]) => {
       let t = toMin(a);
       const end = toMin(b);
@@ -72,11 +73,11 @@
           const sv = servs[h % servs.length];
           if (t + sv.duracao <= end) {
             list.push({ id: "m" + h, socio: socioId, date: ds, start: t, dur: sv.duracao, servico: sv.id, cliente: NOMES[h % NOMES.length], nota: NOTAS[(h >> 3) % NOTAS.length], mock: true });
-            t += Math.ceil(sv.duracao / 30) * 30;
+            t += Math.ceil(sv.duracao / step) * step;
             continue;
           }
         }
-        t += 30;
+        t += step;
       }
     });
     return (mockCache[key] = list);
@@ -146,6 +147,7 @@
   /* ================= SITE ================= */
   function bindTexts() {
     $$("[data-bind]").forEach(el => { const v = cfg[el.dataset.bind]; if (v != null) el.textContent = v; });
+    if (cfg.fotoPrincipal) $(".hero-photo .ph").outerHTML = phHtml("Foto principal", cfg.fotoPrincipal);
     $("#booksy-link").href = cfg.booksyUrl;
     document.title = cfg.nome + " Barbearia";
   }
