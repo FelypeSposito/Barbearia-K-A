@@ -232,25 +232,31 @@
     if (!cal.month) { const d = first ? fromIso(first) : today(); cal.month = new Date(d.getFullYear(), d.getMonth(), 1); }
     if (!$("#cal").hidden) renderCal();
   }
-  /* abertura: o quadro de letrinhas da porta com os horários livres do primeiro dia com vaga.
-     Cada horário é um botão: um toque e já vai pra confirmação. */
+  /* abertura: a agenda do dia escrita a caneta no espelho. Mostra a sequência de horários de
+     cada um a partir de agora: o ocupado aparece riscado, o livre é um botão que já leva pra confirmação. */
   function renderVagas(first) {
     const box = $("#vagas");
-    if (!first) { box.innerHTML = `<p class="q-t">Agenda cheia</p><p class="q-off">Nos próximos ${cfg.agendamento.diasAFrente} dias não tem vaga.</p><a class="q-link" href="${esc(cfg.booksyUrl)}" target="_blank" rel="noopener">Ver no Booksy</a>`; return; }
-    const dia = dayLabel(first);
-    const titulo = dia === "Hoje" ? "Hoje tem horário" : dia === "Amanhã" ? "Amanhã tem horário" : "Tem horário " + dia.toLowerCase();
-    box.innerHTML = `<p class="q-t">${titulo}</p>` + cfg.socios.map(s => {
-      const f = cal.days[first][s.id] || [];
+    if (!first) { box.innerHTML = `<p class="e-t">Agenda cheia</p><p class="e-off">Nos próximos ${cfg.agendamento.diasAFrente} dias não tem vaga.</p><a class="e-link" href="${esc(cfg.booksyUrl)}" target="_blank" rel="noopener">Ver no Booksy</a>`; return; }
+    const dia = dayLabel(first), d = fromIso(first), dur = corteDur(), step = cfg.agendamento.intervaloMin;
+    const now = new Date(), minStart = iso(now) === first ? now.getHours() * 60 + now.getMinutes() + cfg.agendamento.antecedenciaMin : -1;
+    const titulo = dia === "Hoje" ? "Agenda de hoje" : dia === "Amanhã" ? "Agenda de amanhã" : "Agenda de " + dia.toLowerCase();
+    box.innerHTML = `<p class="e-t">${titulo}</p>` + cfg.socios.map(s => {
+      const ranges = s.jornada[DK[d.getDay()]] || [];
+      const livres = cal.days[first][s.id] || [];
+      const seq = [];
+      ranges.forEach(([a, b]) => { for (let t = toMin(a); t + dur <= toMin(b); t += step) if (t >= minStart) seq.push(t); });
       let linha;
-      if (f.length) linha = f.slice(0, 3).map(t => `<button type="button" class="q-time" data-quick="${s.id}|${first}|${t}" aria-label="${esc(s.nome)}, ${dia.toLowerCase()} às ${fmt(t)}">${fmt(t)}</button>`).join("")
-        + (f.length > 3 ? `<button type="button" class="q-time q-more" data-book-socio="${s.id}" aria-label="Mais ${f.length - 3} horários com ${esc(s.nome)}">+${f.length - 3}</button>` : "");
-      else {
-        const nf = nextFree(s.id, corteDur());
-        const motivo = (s.jornada[DK[fromIso(first).getDay()]] || []).length ? "Lotado" : "De folga";
-        linha = `<span class="q-off">${motivo}</span>` + (nf ? `<button type="button" class="q-time" data-quick="${s.id}|${nf.date}|${nf.time}">${dayLabel(nf.date)} ${fmt(nf.time)}</button>` : "");
+      if (livres.length) {
+        const ini = Math.max(0, seq.indexOf(livres[0]) - 1); // começa um antes do primeiro livre, pra mostrar o ritmo do dia
+        linha = seq.slice(ini, ini + 6).map(t => livres.includes(t)
+          ? `<button type="button" class="e-time" data-quick="${s.id}|${first}|${t}" aria-label="${esc(s.nome)}, ${dia.toLowerCase()} às ${fmt(t)}, livre">${fmt(t)}</button>`
+          : `<s class="e-time e-busy" aria-label="${fmt(t)} ocupado">${fmt(t)}</s>`).join("");
+      } else {
+        const nf = nextFree(s.id, dur);
+        linha = `<span class="e-off">${ranges.length ? "Lotado" : "De folga"}</span>` + (nf ? `<button type="button" class="e-time e-next" data-quick="${s.id}|${nf.date}|${nf.time}">${dayLabel(nf.date).toLowerCase()} ${fmt(nf.time)}</button>` : "");
       }
-      return `<div class="q-row"><span class="q-n">${esc(s.nome)}</span><span class="q-times">${linha}</span></div>`;
-    }).join("") + `<div class="q-foot"><span>Toca no horário pra marcar</span><button type="button" class="q-link" data-cal-open>Outros dias</button></div>`;
+      return `<div class="e-row"><span class="e-n">${esc(s.nome)}</span><span class="e-times">${linha}</span></div>`;
+    }).join("") + `<div class="e-foot"><span>Riscado já tem gente. Toca num livre.</span><button type="button" class="e-link" data-cal-open>Outros dias</button></div>`;
   }
   document.addEventListener("click", e => {
     const t = e.target.closest("[data-quick]"); if (!t) return;
