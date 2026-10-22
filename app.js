@@ -147,7 +147,6 @@
   /* ================= SITE ================= */
   function bindTexts() {
     $$("[data-bind]").forEach(el => { const v = cfg[el.dataset.bind]; if (v != null) el.textContent = v; });
-    if (cfg.fotoPrincipal) $(".hero-photo .ph").outerHTML = phHtml("Foto principal", cfg.fotoPrincipal);
     $("#booksy-link").href = cfg.booksyUrl;
     // contato vira ação: WhatsApp abre a conversa, endereço abre o mapa, Instagram abre o perfil
     const zap = String(cfg.whatsapp || "").replace(/\D/g, "");
@@ -180,7 +179,7 @@
       return `<article class="socio">
         <div class="socio-photo">${s.foto ? phHtml("Retrato de " + s.nome, s.foto) : `<div class="ph ph-inicial" role="img" aria-label="${esc(s.nome)}, foto em breve"><span aria-hidden="true">${esc(s.nome.charAt(0))}</span></div>`}</div>
         <h3 class="socio-name">${esc(s.nome)}</h3>
-        <p>Na máquina desde ${s.desde}. Manda bem em ${esc(lista)}.</p>
+        <p>Barbeiro desde ${s.desde}. Especialidades: ${esc(lista)}.</p>
         <p>${esc(s.bio)}</p>
         ${(nf => nf ? `<p class="socio-next">Próximo horário: <b>${dayLabel(nf.date).toLowerCase()}, ${fmt(nf.time)}</b></p>` : `<p class="socio-next">Sem horário livre nos próximos dias</p>`)(nextFree(s.id, corteDur()))}
         <div class="socio-links">
@@ -192,13 +191,14 @@
   }
 
   function renderHistoria() {
+    if (!$("#timeline")) return;
     $("#timeline").innerHTML = cfg.historia.map(h => `<li><span class="ano">${h.ano}</span><span>${esc(h.texto)}</span></li>`).join("");
   }
 
   function renderServicos() {
     $("#lista-servicos").innerHTML = cfg.servicos.map(s => {
       const quem = s.socios.length === cfg.socios.length ? "" : ", só com " + s.socios.map(id => socioById(id).nome).join(" e ");
-      return `<li><button class="price" type="button" data-book-serv="${s.id}" aria-label="Agendar ${esc(s.nome)}">
+      return `<li><button class="price${s.destaque ? " price-hl" : ""}" type="button" data-book-serv="${s.id}" aria-label="Agendar ${esc(s.nome)}">
         <span class="price-n">${esc(s.nome)}<small>${s.duracao} min${quem}</small></span>
         <span class="price-dots" aria-hidden="true"></span>
         <span class="price-v"><small>R$</small>${s.preco}</span>
@@ -248,7 +248,7 @@
       let linha;
       if (livres.length) {
         const ini = Math.max(0, seq.indexOf(livres[0]) - 1); // começa um antes do primeiro livre, pra mostrar o ritmo do dia
-        linha = seq.slice(ini, ini + 6).map(t => livres.includes(t)
+        linha = seq.slice(ini, ini + 4).map(t => livres.includes(t)
           ? `<button type="button" class="e-time" data-quick="${s.id}|${first}|${t}" aria-label="${esc(s.nome)}, ${dia.toLowerCase()} às ${fmt(t)}, livre">${fmt(t)}</button>`
           : `<s class="e-time e-busy" aria-label="${fmt(t)} ocupado">${fmt(t)}</s>`).join("");
       } else {
@@ -256,7 +256,7 @@
         linha = `<span class="e-off">${ranges.length ? "Lotado" : "De folga"}</span>` + (nf ? `<button type="button" class="e-time e-next" data-quick="${s.id}|${nf.date}|${nf.time}">${dayLabel(nf.date).toLowerCase()} ${fmt(nf.time)}</button>` : "");
       }
       return `<div class="e-row"><span class="e-n">${esc(s.nome)}</span><span class="e-times">${linha}</span></div>`;
-    }).join("") + `<div class="e-foot"><span>Riscado já tem gente. Toca num livre.</span><button type="button" class="e-link" data-cal-open>Outros dias</button></div>`;
+    }).join("") + `<div class="e-foot"><button type="button" class="e-link" data-cal-open>Ver outros dias</button></div>`;
   }
   document.addEventListener("click", e => {
     const t = e.target.closest("[data-quick]"); if (!t) return;
@@ -408,7 +408,6 @@
       placePole();
       if (!reduce) { target = y * 0.35; if (!spinning) { spinning = true; requestAnimationFrame(spin); } }
       if (currentView === "site") {
-        if (!reduce && y < innerHeight * 1.5) media.style.transform = `translate3d(0, ${y * 0.08}px, 0)`;
         if (!reduce) parallax();
         fab.classList.toggle("show", y > photo.offsetTop + photo.offsetHeight);
       }
@@ -487,7 +486,7 @@
 
   function resumo() {
     const parts = [];
-    if (bk.servico) { const s = servById(bk.servico); parts.push(`<strong>${esc(s.nome)}</strong>, ${s.duracao} min, ${brl(s.preco)}`); }
+    if (bk.servico) parts.push(`<strong>${esc(servById(bk.servico).nome)}</strong>`);
     const who = bk.assigned || (bk.socio && bk.socio !== "any" ? bk.socio : null);
     if (who) parts.push("com <strong>" + esc(socioById(who).nome) + "</strong>");
     else if (bk.socio === "any") parts.push("com quem estiver livre");
@@ -504,15 +503,14 @@
     if (last) label = cfg.agendamento.modo === "booksy" ? "Finalizar no Booksy" : (cfg.agendamento.exigirLogin && !user ? "Entrar e confirmar" : "Confirmar agendamento");
     // nos dois primeiros passos tocar na opção já avança, então não há botão parado no rodapé
     if (bk.step < 2) { foot.innerHTML = `<span class="resume">${resumo() || "Toque no serviço que você quer."}</span>`; return; }
-    foot.innerHTML = `<span class="resume">${resumo() || "Escolha um serviço para começar."}</span>
-      <button class="btn" type="button" data-act="next" ${ok ? "" : "disabled"}>${label}</button>`;
+    foot.innerHTML = (last ? "" : `<span class="resume">${resumo() || "Escolha um serviço para começar."}</span>`) + `<button class="btn" type="button" data-act="next" ${ok ? "" : "disabled"}>${label}</button>`;
   }
 
   function stepServico() {
     return `<div class="opt-list">${cfg.servicos.map(s => `<button type="button" class="opt" data-pick-serv="${s.id}" aria-pressed="${bk.servico === s.id}">
       <span class="o-t">${esc(s.nome)}</span>
       <span class="o-r">${brl(s.preco)}<small>${s.duracao} min</small></span>
-      <span class="o-s">${s.socios.length === cfg.socios.length ? "Kaique ou Ângelo" : "Só com " + s.socios.map(id => socioById(id).nome).join(" e ")}</span></button>`).join("")}</div>`;
+      ${s.socios.length === cfg.socios.length ? "" : '<span class="o-s">Só com ' + s.socios.map(id => socioById(id).nome).join(" e ") + "</span>"}</button>`).join("")}</div>`;
   }
 
   function stepSocio() {
@@ -525,7 +523,7 @@
         <span class="o-s">${esc(s.especialidades.join(", "))}</span></button>`;
     });
     if (sv.socios.length > 1) opts.unshift(`<button type="button" class="opt" data-pick-socio="any" aria-pressed="${bk.socio === "any"}">
-        <span class="o-t">Tanto faz</span><span class="o-r"><small>mais horários</small></span><span class="o-s">Mostra as vagas dos dois lado a lado</span></button>`);
+        <span class="o-t">Tanto faz</span><span class="o-r"><small>mais horários</small></span></button>`);
     return `<div class="opt-list">${opts.join("")}</div>`;
   }
 
@@ -556,35 +554,38 @@
       const sl = freeSlots(id, bk.date, sv.duracao);
       const body = sl.length ? `<div class="slots">${sl.map(t => `<button type="button" class="slot" data-pick-time="${id}|${t}" aria-pressed="${bk.time === t && bk.assigned === id}">${fmt(t)}</button>`).join("")}</div>`
         : `<p class="slot-empty">${(s.jornada[DK[fromIso(bk.date).getDay()]] || []).length ? "Sem vagas neste dia." : esc(s.nome) + " está de folga neste dia."}</p>`;
-      return `<div class="slot-group"><h4>${esc(s.nome)} <span>${sl.length ? sl.length + " horários" : ""}</span></h4>${body}</div>`;
+      return `<div class="slot-group"><h4>${esc(s.nome)}</h4>${body}</div>`;
     }).join("");
-    return `<div class="date-strip">${strip}</div>${groups}
-      <p class="hint">Mostrando horários com ${sv.duracao} minutos livres.</p>`;
+    return `<div class="date-strip">${strip}</div>${groups}`;
   }
 
   function stepDetalhes() {
     const user = store.get("user", null);
-    const prefs = store.get("prefs", "");
-    const chips = ["Mesmo da última vez", "Mais baixo na lateral", "Só aparar", "Vou levar foto de referência", "Sem máquina em cima"];
+    const sv = servById(bk.servico), quem = socioById(bk.assigned);
+    const chips = ["Mesmo da última vez", "Só aparar", "Vou levar foto de referência"];
     // só oferece os serviços que cabem nesse horário com esse profissional
     const cabem = cfg.servicos.filter(v => v.socios.includes(bk.assigned) && (v.id === bk.servico || freeSlots(bk.assigned, bk.date, v.duracao).includes(bk.time)));
-    const troca = cabem.length > 1 ? `<p class="lbl">Serviço</p><div class="serv-pick" role="radiogroup" aria-label="Serviço">${cabem.map(v => `<button type="button" role="radio" aria-checked="${v.id === bk.servico}" data-swap-serv="${v.id}"><span>${esc(v.nome)}</span><small>${brl(v.preco)}, ${v.duracao} min</small></button>`).join("")}</div>` : "";
-    return `${troca}<dl class="summary">
-        ${troca ? "" : `<div><dt>Serviço</dt><dd>${esc(servById(bk.servico).nome)}</dd></div>`}
-        <div><dt>Com</dt><dd>${esc(socioById(bk.assigned).nome)}</dd></div>
-        <div><dt>Quando</dt><dd>${dayLabel(bk.date)}, ${fmt(bk.time)}</dd></div>
-        <div><dt>Valor</dt><dd>${brl(servById(bk.servico).preco)}</dd></div>
-      </dl>
-      <div style="margin-top:18px">
-        <label class="lbl" for="bk-nota">O que você quer neste corte?</label>
-        <textarea id="bk-nota" rows="3" placeholder="Ex.: degradê na 1, manter o comprimento em cima">${esc(bk.nota)}</textarea>
-        <div class="quick">${chips.map(c => `<button type="button" data-chip="${esc(c)}">${esc(c)}</button>`).join("")}</div>
+    const lista = bk.trocar ? `<div class="serv-pick" role="radiogroup" aria-label="Serviço">${cabem.map(v => `<button type="button" role="radio" aria-checked="${v.id === bk.servico}" data-swap-serv="${v.id}"><span>${esc(v.nome)}</span><small>${brl(v.preco)}, ${v.duracao} min</small></button>`).join("")}</div>` : "";
+    // o pedido para o corte é opcional: fica recolhido até o cliente querer escrever
+    const nota = (bk.nota || bk.notaAberta)
+      ? `<div class="nota"><label class="lbl" for="bk-nota">Pedido para o corte (opcional)</label>
+          <textarea id="bk-nota" rows="2" placeholder="Ex.: degradê na 1, manter o comprimento em cima">${esc(bk.nota)}</textarea>
+          <div class="quick">${chips.map(c => `<button type="button" data-chip="${esc(c)}">${esc(c)}</button>`).join("")}</div></div>`
+      : `<button type="button" class="link-sm" data-act="nota">Adicionar pedido para o corte</button>`;
+    const quem2 = cfg.agendamento.modo === "booksy" ? "Você vai finalizar no Booksy."
+      : user ? `Agendando como <strong>${esc(user.nome)}</strong>.`
+      : "Você entra com o Google só na hora de confirmar.";
+    return `<div class="confirma">
+        <div>
+          <p class="confirma-t">${esc(sv.nome)} com ${esc(quem.nome)}</p>
+          <p class="confirma-s">${dayLabel(bk.date)}, ${fmt(bk.time)}</p>
+        </div>
+        <p class="confirma-v">${brl(sv.preco)}<small>${sv.duracao} min</small></p>
       </div>
-      ${prefs ? `<p class="hint">Suas preferências vão junto: “${esc(prefs)}”</p>` : ""}
-      ${cfg.agendamento.modo === "booksy" ? `<p class="hint">Você vai finalizar no Booksy. O horário escolhido aqui serve de guia.</p>` :
-        user ? `<p class="hint">Agendando como <strong>${esc(user.nome)}</strong> (${esc(user.email)})</p>` :
-        `<p class="hint">Para confirmar, entre com sua conta Google. Assim o histórico e as observações ficam salvos.</p>`}
-      <p class="hint">Prefere o sistema atual? <a class="link" href="${esc(cfg.booksyUrl)}" target="_blank" rel="noopener">Agendar pelo Booksy</a></p>`;
+      ${cabem.length > 1 && !bk.trocar ? '<button type="button" class="link-sm" data-act="troca">Trocar serviço</button>' : ""}
+      ${lista}
+      ${nota}
+      <p class="hint">${quem2}</p>`;
   }
 
   function stepSucesso() {
@@ -627,10 +628,16 @@
       $$(".slot", $("#sheet")).forEach(s => s.setAttribute("aria-pressed", s === t));
       renderFoot($("#sheet-foot")); return;
     }
-    if (d.swapServ) { bk.servico = d.swapServ; const y = $("#sheet-body").scrollTop; renderStep(); $(".step-anim").classList.remove("step-anim"); $("#sheet-body").scrollTop = y; return; }
+    if (d.swapServ) { bk.servico = d.swapServ; bk.trocar = false; const y = $("#sheet-body").scrollTop; renderStep(); $(".step-anim").classList.remove("step-anim"); $("#sheet-body").scrollTop = y; return; }
     if (d.chip) { const ta = $("#bk-nota"); ta.value = (ta.value ? ta.value.trim() + ". " : "") + d.chip; bk.nota = ta.value; return; }
+    if (d.act === "troca" || d.act === "nota") {
+      if (d.act === "troca") bk.trocar = true; else bk.notaAberta = true;
+      const y = $("#sheet-body").scrollTop; renderStep(); $(".step-anim").classList.remove("step-anim"); $("#sheet-body").scrollTop = y;
+      if (d.act === "nota") { const ta = $("#bk-nota"); if (ta) ta.focus(); }
+      return;
+    }
     if (d.act === "next") {
-      if (bk.step === 3) { bk.nota = $("#bk-nota").value; confirmBooking(); return; }
+      if (bk.step === 3) { const ta = $("#bk-nota"); if (ta) bk.nota = ta.value; confirmBooking(); return; }
       bk.step++; renderStep(); return;
     }
     if (d.act === "done") { closeBooking(); return; }
