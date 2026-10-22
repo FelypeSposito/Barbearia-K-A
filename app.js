@@ -149,6 +149,11 @@
     $$("[data-bind]").forEach(el => { const v = cfg[el.dataset.bind]; if (v != null) el.textContent = v; });
     if (cfg.fotoPrincipal) $(".hero-photo .ph").outerHTML = phHtml("Foto principal", cfg.fotoPrincipal);
     $("#booksy-link").href = cfg.booksyUrl;
+    // contato vira ação: WhatsApp abre a conversa, endereço abre o mapa, Instagram abre o perfil
+    const zap = String(cfg.whatsapp || "").replace(/\D/g, "");
+    $$("[data-href=whatsapp]").forEach(a => (a.href = "https://wa.me/" + (zap.length <= 11 ? "55" : "") + zap));
+    $$("[data-href=endereco]").forEach(a => (a.href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(cfg.endereco + ", " + cfg.cidade)));
+    $$("[data-href=instagram]").forEach(a => (a.href = "https://www.instagram.com/" + encodeURIComponent(String(cfg.instagram).replace("@", "")) + "/"));
     document.title = cfg.nome + " Barbearia";
   }
 
@@ -177,20 +182,13 @@
         <h3 class="socio-name">${esc(s.nome)}</h3>
         <p>Na máquina desde ${s.desde}. Manda bem em ${esc(lista)}.</p>
         <p>${esc(s.bio)}</p>
+        ${(nf => nf ? `<p class="socio-next">Próximo horário: <b>${dayLabel(nf.date).toLowerCase()}, ${fmt(nf.time)}</b></p>` : `<p class="socio-next">Sem horário livre nos próximos dias</p>`)(nextFree(s.id, corteDur()))}
         <div class="socio-links">
-          <button class="link" type="button" data-book-socio="${s.id}">Agendar com ${esc(s.nome)}</button>
+          <button class="btn btn-line btn-sm" type="button" data-book-socio="${s.id}">Agendar com ${esc(s.nome)}</button>
           ${s.instagram ? `<a class="link muted" href="https://www.instagram.com/${encodeURIComponent(s.instagram)}/" target="_blank" rel="noopener">@${esc(s.instagram)}</a>` : ""}
         </div>
       </article>`;
     }).join("");
-  }
-
-  /* faixas góticas: os cortes da casa e o nome, separados pelo K do logo */
-  function renderFaixas() {
-    const esp = [...new Set(cfg.socios.flatMap(s => s.especialidades).concat(cfg.servicos.map(s => s.nome)))];
-    const linha = (palavras, n) => Array(n).fill(palavras.map(p => `<span>${esc(p)}</span><i>K</i>`).join("")).join("");
-    $("#faixa-1").innerHTML = linha(["Corte na régua"].concat(esp, [cfg.cidade]), 3);
-    $("#faixa-2").innerHTML = linha([cfg.nome, "Studio Kaique dos Corte", "Desde " + cfg.desde, cfg.cidade], 5);
   }
 
   function renderHistoria() {
@@ -203,7 +201,8 @@
       return `<li><button class="price" type="button" data-book-serv="${s.id}" aria-label="Agendar ${esc(s.nome)}">
         <span class="price-n">${esc(s.nome)}<small>${s.duracao} min${quem}</small></span>
         <span class="price-dots" aria-hidden="true"></span>
-        <span class="price-v">R$ ${s.preco}</span>
+        <span class="price-v"><small>R$</small>${s.preco}</span>
+        <svg class="price-go" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button></li>`;
     }).join("");
   }
@@ -227,13 +226,43 @@
     const first = Object.keys(cal.days)[0];
     let best = null;
     if (first) cfg.socios.forEach(s => { const f = cal.days[first][s.id]; if (f.length && (!best || f[0] < best.t)) best = { t: f[0], s }; });
-    $("#proximo").textContent = best ? `Próxima vaga: ${dayLabel(first).toLowerCase()}, ${fmt(best.t)}, com o ${best.s.nome}.` : "";
-    $("#when-text").textContent = best ? `${dayLabel(first)}, ${fmt(best.t)}` : "Datas livres";
+    renderVagas(first);
     $("#mbar-when").textContent = best ? `${dayLabel(first)}, ${fmt(best.t)}` : "Ver datas livres";
     if (!cal.sel || !cal.days[cal.sel]) cal.sel = first || null;
     if (!cal.month) { const d = first ? fromIso(first) : today(); cal.month = new Date(d.getFullYear(), d.getMonth(), 1); }
     if (!$("#cal").hidden) renderCal();
   }
+  /* abertura: a agenda do dia escrita a caneta no espelho. Mostra a sequência de horários de
+     cada um a partir de agora: o ocupado aparece riscado, o livre é um botão que já leva pra confirmação. */
+  function renderVagas(first) {
+    const box = $("#vagas");
+    if (!first) { box.innerHTML = `<p class="e-t">Agenda cheia</p><p class="e-off">Nos próximos ${cfg.agendamento.diasAFrente} dias não tem vaga.</p><a class="e-link" href="${esc(cfg.booksyUrl)}" target="_blank" rel="noopener">Ver no Booksy</a>`; return; }
+    const dia = dayLabel(first), d = fromIso(first), dur = corteDur(), step = cfg.agendamento.intervaloMin;
+    const now = new Date(), minStart = iso(now) === first ? now.getHours() * 60 + now.getMinutes() + cfg.agendamento.antecedenciaMin : -1;
+    const titulo = dia === "Hoje" ? "Agenda de hoje" : dia === "Amanhã" ? "Agenda de amanhã" : "Agenda de " + dia.toLowerCase();
+    box.innerHTML = `<p class="e-t">${titulo}</p>` + cfg.socios.map(s => {
+      const ranges = s.jornada[DK[d.getDay()]] || [];
+      const livres = cal.days[first][s.id] || [];
+      const seq = [];
+      ranges.forEach(([a, b]) => { for (let t = toMin(a); t + dur <= toMin(b); t += step) if (t >= minStart) seq.push(t); });
+      let linha;
+      if (livres.length) {
+        const ini = Math.max(0, seq.indexOf(livres[0]) - 1); // começa um antes do primeiro livre, pra mostrar o ritmo do dia
+        linha = seq.slice(ini, ini + 6).map(t => livres.includes(t)
+          ? `<button type="button" class="e-time" data-quick="${s.id}|${first}|${t}" aria-label="${esc(s.nome)}, ${dia.toLowerCase()} às ${fmt(t)}, livre">${fmt(t)}</button>`
+          : `<s class="e-time e-busy" aria-label="${fmt(t)} ocupado">${fmt(t)}</s>`).join("");
+      } else {
+        const nf = nextFree(s.id, dur);
+        linha = `<span class="e-off">${ranges.length ? "Lotado" : "De folga"}</span>` + (nf ? `<button type="button" class="e-time e-next" data-quick="${s.id}|${nf.date}|${nf.time}">${dayLabel(nf.date).toLowerCase()} ${fmt(nf.time)}</button>` : "");
+      }
+      return `<div class="e-row"><span class="e-n">${esc(s.nome)}</span><span class="e-times">${linha}</span></div>`;
+    }).join("") + `<div class="e-foot"><span>Riscado já tem gente. Toca num livre.</span><button type="button" class="e-link" data-cal-open>Outros dias</button></div>`;
+  }
+  document.addEventListener("click", e => {
+    const t = e.target.closest("[data-quick]"); if (!t) return;
+    const [id, ds, tm] = t.dataset.quick.split("|");
+    openBooking({ servico: (servById("corte") || cfg.servicos[0]).id, socio: id, assigned: id, date: ds, time: +tm, step: 3 });
+  });
   function renderCal() {
     const m = cal.month, y = m.getFullYear(), mo = m.getMonth();
     $("#cal-title").textContent = m.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
@@ -327,7 +356,26 @@
 
   /* parallax da foto do topo, poste de barbeiro e botão flutuante */
   function initScroll() {
-    const media = $("[data-parallax]"), bar = $("#topbar"), fab = $("#mbar"), photo = $("#inicio"), stripes = $("#pole-stripes");
+    const media = $("[data-parallax]"), bar = $("#topbar"), fab = $("#mbar"), photo = $("#inicio"), stripes = $("#pole-stripes"), rail = $("#rail"), pole = $("#pole");
+    // o poste é o "polegar" da barra de rolagem: tamanho proporcional à tela, posição = quanto já rolou
+    const placePole = () => {
+      const doc = document.documentElement.scrollHeight, vh = innerHeight, track = rail.clientHeight;
+      const h = Math.max(64, Math.min(track * 0.5, track * vh / doc));
+      const max = Math.max(1, doc - vh);
+      pole.style.height = h + "px";
+      pole.style.transform = `translateY(${(track - h) * Math.min(1, scrollY / max)}px)`;
+      rail.classList.toggle("off", doc <= vh + 4);
+      return { h, max, track };
+    };
+    // arrastar o poste (ou tocar no trilho) rola a página
+    let drag = null;
+    pole.addEventListener("pointerdown", e => { const g = placePole(); drag = { y: e.clientY, s: scrollY, k: g.max / Math.max(1, g.track - g.h) }; pole.setPointerCapture(e.pointerId); rail.classList.add("drag"); e.preventDefault(); });
+    pole.addEventListener("pointermove", e => { if (drag) scrollTo(0, drag.s + (e.clientY - drag.y) * drag.k); });
+    const stop = () => { drag = null; rail.classList.remove("drag"); };
+    pole.addEventListener("pointerup", stop); pole.addEventListener("pointercancel", stop);
+    rail.addEventListener("pointerdown", e => { if (e.target !== rail) return; const g = placePole(), r = rail.getBoundingClientRect(); scrollTo({ top: (e.clientY - r.top - g.h / 2) / Math.max(1, g.track - g.h) * g.max, behavior: reduce ? "auto" : "smooth" }); });
+    addEventListener("resize", placePole);
+    new ResizeObserver(placePole).observe(document.body);
     const PERIOD = 40; // altura de um ciclo das listras (-60deg, 20px)
     let target = 0, cur = 0, spinning = false, ticking = false;
     const spin = () => {
@@ -357,6 +405,7 @@
     const run = () => {
       const y = scrollY;
       bar.classList.toggle("scrolled", y > 8);
+      placePole();
       if (!reduce) { target = y * 0.35; if (!spinning) { spinning = true; requestAnimationFrame(spin); } }
       if (currentView === "site") {
         if (!reduce && y < innerHeight * 1.5) media.style.transform = `translate3d(0, ${y * 0.08}px, 0)`;
@@ -423,7 +472,9 @@
 
   function renderStep(dir) {
     const body = $("#sheet-body"), foot = $("#sheet-foot");
-    $("#steps").textContent = bk.step < 4 ? `Passo ${bk.step + 1} de ${STEPS.length}` : "";
+    const st = $("#steps");
+    st.innerHTML = bk.step < 4 ? STEPS.map((n, i) => `<i class="${i < bk.step ? "done" : i === bk.step ? "on" : ""}"></i>`).join("") : "";
+    st.setAttribute("aria-label", bk.step < 4 ? `Passo ${bk.step + 1} de ${STEPS.length}` : "");
     $("#sheet-title").textContent = bk.step < 4 ? STEPS[bk.step] : "Agendado";
     $("#sheet-back").style.visibility = bk.step > 0 && bk.step < 4 ? "visible" : "hidden";
     const html = [stepServico, stepSocio, stepHorario, stepDetalhes, stepSucesso][bk.step]();
@@ -451,6 +502,8 @@
     const user = store.get("user", null);
     let label = "Continuar";
     if (last) label = cfg.agendamento.modo === "booksy" ? "Finalizar no Booksy" : (cfg.agendamento.exigirLogin && !user ? "Entrar e confirmar" : "Confirmar agendamento");
+    // nos dois primeiros passos tocar na opção já avança, então não há botão parado no rodapé
+    if (bk.step < 2) { foot.innerHTML = `<span class="resume">${resumo() || "Toque no serviço que você quer."}</span>`; return; }
     foot.innerHTML = `<span class="resume">${resumo() || "Escolha um serviço para começar."}</span>
       <button class="btn" type="button" data-act="next" ${ok ? "" : "disabled"}>${label}</button>`;
   }
@@ -513,8 +566,11 @@
     const user = store.get("user", null);
     const prefs = store.get("prefs", "");
     const chips = ["Mesmo da última vez", "Mais baixo na lateral", "Só aparar", "Vou levar foto de referência", "Sem máquina em cima"];
-    return `<dl class="summary">
-        <div><dt>Serviço</dt><dd>${esc(servById(bk.servico).nome)}</dd></div>
+    // só oferece os serviços que cabem nesse horário com esse profissional
+    const cabem = cfg.servicos.filter(v => v.socios.includes(bk.assigned) && (v.id === bk.servico || freeSlots(bk.assigned, bk.date, v.duracao).includes(bk.time)));
+    const troca = cabem.length > 1 ? `<p class="lbl">Serviço</p><div class="serv-pick" role="radiogroup" aria-label="Serviço">${cabem.map(v => `<button type="button" role="radio" aria-checked="${v.id === bk.servico}" data-swap-serv="${v.id}"><span>${esc(v.nome)}</span><small>${brl(v.preco)}, ${v.duracao} min</small></button>`).join("")}</div>` : "";
+    return `${troca}<dl class="summary">
+        ${troca ? "" : `<div><dt>Serviço</dt><dd>${esc(servById(bk.servico).nome)}</dd></div>`}
         <div><dt>Com</dt><dd>${esc(socioById(bk.assigned).nome)}</dd></div>
         <div><dt>Quando</dt><dd>${dayLabel(bk.date)}, ${fmt(bk.time)}</dd></div>
         <div><dt>Valor</dt><dd>${brl(servById(bk.servico).preco)}</dd></div>
@@ -571,6 +627,7 @@
       $$(".slot", $("#sheet")).forEach(s => s.setAttribute("aria-pressed", s === t));
       renderFoot($("#sheet-foot")); return;
     }
+    if (d.swapServ) { bk.servico = d.swapServ; const y = $("#sheet-body").scrollTop; renderStep(); $(".step-anim").classList.remove("step-anim"); $("#sheet-body").scrollTop = y; return; }
     if (d.chip) { const ta = $("#bk-nota"); ta.value = (ta.value ? ta.value.trim() + ". " : "") + d.chip; bk.nota = ta.value; return; }
     if (d.act === "next") {
       if (bk.step === 3) { bk.nota = $("#bk-nota").value; confirmBooking(); return; }
@@ -796,7 +853,6 @@
   bindTexts();
   renderWorks();
   renderHistoria();
-  renderFaixas();
   renderServicos();
   refreshSite();
   railDots($("#works")); railDots($("#socios-grid"));
