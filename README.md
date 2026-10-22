@@ -5,7 +5,7 @@ Protótipo estático (HTML + CSS + JS puro, sem build). Abra `index.html` num se
 | Arquivo | O que é |
 |---|---|
 | `config.js` | **Tudo que muda por cliente**: nome, contatos, serviços e preços, sócios, jornada de cada um, regras do agendamento, fotos e história. Itens `[CONFIRMAR]` são placeholders. |
-| `index.html` | Estrutura das 3 telas: site, Minha conta, Painel dos sócios, e o sheet de agendamento. |
+| `index.html` | Estrutura das 3 telas: site, Minha conta, Painel dos sócios, e o sheet de agendamento. | Documento completo (doctype, viewport e head), pronto para GitHub Pages, Vercel ou Netlify. No artifact do Claude vale só o trecho do `<title>` em diante, porque o publicador monta o resto. |
 | `styles.css` | Visual (tokens de cor no topo, tema claro/escuro automático). |
 | `app.js` | Disponibilidade, fluxo de agendamento, login simulado, histórico e painel. Dados fictícios em `localStorage`. |
 | `fx.js` | Entrada das seções ao rolar, foco de teclado nas fatias de Cortes e horário de funcionamento (calculado da jornada dos sócios). |
