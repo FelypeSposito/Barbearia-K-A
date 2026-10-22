@@ -7,12 +7,13 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@300;400&family=Grenze:wght@300;400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500&family=Grenze+Gotisch:wght@300;400&family=Grenze:wght@300;400;500;600&display=swap">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<div class="pole" aria-hidden="true"><div class="pole-stripes" id="pole-stripes"></div></div>
+<!-- o poste de barbeiro é a barra de rolagem: anda com a página e dá pra arrastar -->
+<div class="rail" id="rail" aria-hidden="true"><div class="pole" id="pole"><div class="pole-stripes" id="pole-stripes"></div></div></div>
 
 <header class="topbar" id="topbar">
   <div class="topbar-in">
@@ -61,33 +62,37 @@
 <!-- ======================= SITE ======================= -->
 <main id="view-site" class="view">
 
-  <!-- placa de abertura: preta de ponta a ponta, o logo do estúdio como no Instagram -->
+  <!-- abertura: a fachada preta com o K do estúdio e, do lado, o quadro de letrinhas da porta
+       mostrando quem tá livre hoje. Tocar num horário já leva pra confirmação. -->
   <section class="hero placa" id="inicio">
     <div class="wrap">
       <div class="hero-in">
-        <div class="hero-photo">
-          <div class="hero-photo-in" data-parallax><div class="ph" data-ph="Foto principal"></div></div>
-        </div>
         <div class="hero-text">
+          <div class="hero-photo">
+            <div class="hero-photo-in" data-parallax><div class="ph" data-ph="Foto principal"></div></div>
+          </div>
           <h1 class="hero-title">Corte na régua,<br>sem ficar esperando.</h1>
-          <p class="lead">Barbearia de <span data-bind="nomeCurto">Kaique e Ângelo</span> na <span data-bind="cidade">quebrada</span>. Toca num horário e confirma, leva menos de um minuto.</p>
-          <div class="vagas" id="vagas" aria-live="polite"></div>
+          <p class="lead">A barbearia do Kaique e do Ângelo na <span data-bind="cidade">quebrada</span>. Olha no quadro quem tá livre, toca no horário e pronto, tá marcado.</p>
           <div class="hero-actions">
             <button class="btn" data-open-booking type="button">Escolher serviço e horário</button>
-            <button class="link link-btn" type="button" data-cal-open>Ver outros dias</button>
+            <a class="link link-btn" data-href="whatsapp" target="_blank" rel="noopener">Chamar no zap</a>
           </div>
         </div>
+        <div class="quadro quadro-vagas" id="vagas" aria-live="polite"></div>
       </div>
     </div>
   </section>
 
-  <!-- tabela de preços logo em seguida, como a placa na parede da barbearia -->
+  <!-- a tabela no mesmo quadro de letrinhas, como fica pendurada na parede -->
   <section class="block" id="precos">
     <div class="wrap split">
-      <h2 class="h2">Preços</h2>
+      <div class="split-head">
+        <h2 class="h2">Tabela da casa</h2>
+        <p class="muted">Preço fechado, sem surpresa na hora de pagar. Toca no serviço pra marcar.</p>
+      </div>
       <div>
-        <ul class="prices" id="lista-servicos"></ul>
-        <p class="muted small price-foot">Toca no serviço pra agendar. <a class="link" id="booksy-link" href="#" target="_blank" rel="noopener">Se preferir, ainda dá pelo Booksy.</a></p>
+        <div class="quadro"><ul class="prices" id="lista-servicos"></ul></div>
+        <p class="muted small price-foot"><a class="link" id="booksy-link" href="#" target="_blank" rel="noopener">Se preferir, ainda dá pelo Booksy.</a></p>
       </div>
     </div>
   </section>
@@ -102,7 +107,7 @@
   <section class="block block-last" id="trabalhos">
     <div class="wrap">
       <div class="head-row">
-        <h2 class="h2">Cortes</h2>
+        <h2 class="h2">Cortes da casa</h2>
         <div class="seg" role="tablist" aria-label="Filtrar por sócio" id="filtro-trabalhos"></div>
       </div>
       <div class="works" id="works"></div>
@@ -137,7 +142,10 @@
             <div><dt>WhatsApp</dt><dd><a class="link" data-href="whatsapp" target="_blank" rel="noopener" data-bind="whatsapp">-</a></dd></div>
             <div><dt>Instagram</dt><dd><a class="link" data-href="instagram" target="_blank" rel="noopener" data-bind="instagram">@</a></dd></div>
           </dl>
-          <button class="btn" data-open-booking type="button">Agendar horário</button>
+          <div class="visite-acoes">
+            <a class="btn btn-line" data-href="whatsapp" target="_blank" rel="noopener">Chamar no zap</a>
+            <button class="btn" data-open-booking type="button">Agendar horário</button>
+          </div>
         </div>
       </div>
     </div>
@@ -145,6 +153,7 @@
       <div class="wrap foot-in">
         <span data-bind="nome">Kaique &amp; Ângelo</span>
         <a class="link" href="https://www.instagram.com/studio_kaiquedoscorte/" target="_blank" rel="noopener">Studio Kaique dos Corte</a>
+        <span>Feito na Zona Leste</span>
       </div>
     </footer>
   </section>

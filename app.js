@@ -201,7 +201,7 @@
       return `<li><button class="price" type="button" data-book-serv="${s.id}" aria-label="Agendar ${esc(s.nome)}">
         <span class="price-n">${esc(s.nome)}<small>${s.duracao} min${quem}</small></span>
         <span class="price-dots" aria-hidden="true"></span>
-        <span class="price-v">R$ ${s.preco}</span>
+        <span class="price-v"><small>R$</small>${s.preco}</span>
         <svg class="price-go" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button></li>`;
     }).join("");
@@ -232,24 +232,25 @@
     if (!cal.month) { const d = first ? fromIso(first) : today(); cal.month = new Date(d.getFullYear(), d.getMonth(), 1); }
     if (!$("#cal").hidden) renderCal();
   }
-  /* abertura: os horários livres do primeiro dia com vaga, um toque e já vai pra confirmação */
+  /* abertura: o quadro de letrinhas da porta com os horários livres do primeiro dia com vaga.
+     Cada horário é um botão: um toque e já vai pra confirmação. */
   function renderVagas(first) {
     const box = $("#vagas");
-    if (!first) { box.innerHTML = `<p class="vagas-off">Agenda cheia nos próximos ${cfg.agendamento.diasAFrente} dias. <a class="link" href="${esc(cfg.booksyUrl)}" target="_blank" rel="noopener">Ver no Booksy</a></p>`; return; }
+    if (!first) { box.innerHTML = `<p class="q-t">Agenda cheia</p><p class="q-off">Nos próximos ${cfg.agendamento.diasAFrente} dias não tem vaga.</p><a class="q-link" href="${esc(cfg.booksyUrl)}" target="_blank" rel="noopener">Ver no Booksy</a>`; return; }
     const dia = dayLabel(first);
-    const titulo = dia === "Hoje" || dia === "Amanhã" ? "Livres " + dia.toLowerCase() : "Próximos livres: " + dia.toLowerCase();
-    box.innerHTML = `<h2 class="vagas-t">${titulo}</h2>` + cfg.socios.map(s => {
+    const titulo = dia === "Hoje" ? "Hoje tem horário" : dia === "Amanhã" ? "Amanhã tem horário" : "Tem horário " + dia.toLowerCase();
+    box.innerHTML = `<p class="q-t">${titulo}</p>` + cfg.socios.map(s => {
       const f = cal.days[first][s.id] || [];
-      let chips;
-      if (f.length) chips = f.slice(0, 4).map(t => `<button type="button" class="time" data-quick="${s.id}|${first}|${t}" aria-label="${esc(s.nome)}, ${dia.toLowerCase()} às ${fmt(t)}">${fmt(t)}</button>`).join("")
-        + (f.length > 4 ? `<button type="button" class="time time-more" data-book-socio="${s.id}">+${f.length - 4}</button>` : "");
+      let linha;
+      if (f.length) linha = f.slice(0, 3).map(t => `<button type="button" class="q-time" data-quick="${s.id}|${first}|${t}" aria-label="${esc(s.nome)}, ${dia.toLowerCase()} às ${fmt(t)}">${fmt(t)}</button>`).join("")
+        + (f.length > 3 ? `<button type="button" class="q-time q-more" data-book-socio="${s.id}" aria-label="Mais ${f.length - 3} horários com ${esc(s.nome)}">+${f.length - 3}</button>` : "");
       else {
         const nf = nextFree(s.id, corteDur());
-        chips = nf ? `<span class="off">${(s.jornada[DK[fromIso(first).getDay()]] || []).length ? "Cheio" : "De folga"} ${dia === "Hoje" ? "hoje" : "nesse dia"}.</span><button type="button" class="time" data-quick="${s.id}|${nf.date}|${nf.time}">${dayLabel(nf.date)}, ${fmt(nf.time)}</button>`
-          : `<span class="off">Sem vagas</span>`;
+        const motivo = (s.jornada[DK[fromIso(first).getDay()]] || []).length ? "Lotado" : "De folga";
+        linha = `<span class="q-off">${motivo}</span>` + (nf ? `<button type="button" class="q-time" data-quick="${s.id}|${nf.date}|${nf.time}">${dayLabel(nf.date)} ${fmt(nf.time)}</button>` : "");
       }
-      return `<div class="vagas-row"><span class="vagas-n">${esc(s.nome)}</span><div class="times">${chips}</div></div>`;
-    }).join("");
+      return `<div class="q-row"><span class="q-n">${esc(s.nome)}</span><span class="q-times">${linha}</span></div>`;
+    }).join("") + `<div class="q-foot"><span>Toca no horário pra marcar</span><button type="button" class="q-link" data-cal-open>Outros dias</button></div>`;
   }
   document.addEventListener("click", e => {
     const t = e.target.closest("[data-quick]"); if (!t) return;
@@ -349,7 +350,26 @@
 
   /* parallax da foto do topo, poste de barbeiro e botão flutuante */
   function initScroll() {
-    const media = $("[data-parallax]"), bar = $("#topbar"), fab = $("#mbar"), photo = $("#inicio"), stripes = $("#pole-stripes");
+    const media = $("[data-parallax]"), bar = $("#topbar"), fab = $("#mbar"), photo = $("#inicio"), stripes = $("#pole-stripes"), rail = $("#rail"), pole = $("#pole");
+    // o poste é o "polegar" da barra de rolagem: tamanho proporcional à tela, posição = quanto já rolou
+    const placePole = () => {
+      const doc = document.documentElement.scrollHeight, vh = innerHeight, track = rail.clientHeight;
+      const h = Math.max(64, Math.min(track * 0.5, track * vh / doc));
+      const max = Math.max(1, doc - vh);
+      pole.style.height = h + "px";
+      pole.style.transform = `translateY(${(track - h) * Math.min(1, scrollY / max)}px)`;
+      rail.classList.toggle("off", doc <= vh + 4);
+      return { h, max, track };
+    };
+    // arrastar o poste (ou tocar no trilho) rola a página
+    let drag = null;
+    pole.addEventListener("pointerdown", e => { const g = placePole(); drag = { y: e.clientY, s: scrollY, k: g.max / Math.max(1, g.track - g.h) }; pole.setPointerCapture(e.pointerId); rail.classList.add("drag"); e.preventDefault(); });
+    pole.addEventListener("pointermove", e => { if (drag) scrollTo(0, drag.s + (e.clientY - drag.y) * drag.k); });
+    const stop = () => { drag = null; rail.classList.remove("drag"); };
+    pole.addEventListener("pointerup", stop); pole.addEventListener("pointercancel", stop);
+    rail.addEventListener("pointerdown", e => { if (e.target !== rail) return; const g = placePole(), r = rail.getBoundingClientRect(); scrollTo({ top: (e.clientY - r.top - g.h / 2) / Math.max(1, g.track - g.h) * g.max, behavior: reduce ? "auto" : "smooth" }); });
+    addEventListener("resize", placePole);
+    new ResizeObserver(placePole).observe(document.body);
     const PERIOD = 40; // altura de um ciclo das listras (-60deg, 20px)
     let target = 0, cur = 0, spinning = false, ticking = false;
     const spin = () => {
@@ -379,6 +399,7 @@
     const run = () => {
       const y = scrollY;
       bar.classList.toggle("scrolled", y > 8);
+      placePole();
       if (!reduce) { target = y * 0.35; if (!spinning) { spinning = true; requestAnimationFrame(spin); } }
       if (currentView === "site") {
         if (!reduce && y < innerHeight * 1.5) media.style.transform = `translate3d(0, ${y * 0.08}px, 0)`;
