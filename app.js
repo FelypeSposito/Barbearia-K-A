@@ -153,7 +153,7 @@
     $$("[data-href=whatsapp]").forEach(a => (a.href = "https://wa.me/" + (zap.length <= 11 ? "55" : "") + zap));
     $$("[data-href=endereco]").forEach(a => (a.href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(cfg.endereco + ", " + cfg.cidade)));
     $$("[data-href=instagram]").forEach(a => (a.href = "https://www.instagram.com/" + encodeURIComponent(String(cfg.instagram).replace("@", "")) + "/"));
-    document.title = cfg.nome + " Barbearia";
+    document.title = cfg.nome;
   }
 
   function workCard(w, i) {
@@ -179,6 +179,7 @@
       return `<article class="socio">
         <div class="socio-photo">${s.foto ? phHtml("Retrato de " + s.nome, s.foto) : `<div class="ph ph-inicial" role="img" aria-label="${esc(s.nome)}, foto em breve"><span aria-hidden="true">${esc(s.nome.charAt(0))}</span></div>`}</div>
         <h3 class="socio-name">${esc(s.nome)}</h3>
+        ${s.papel ? `<p class="socio-papel">${esc(s.papel)}</p>` : ""}
         <p>Barbeiro desde ${s.desde}. Especialidades: ${esc(lista)}.</p>
         <p>${esc(s.bio)}</p>
         ${(nf => nf ? `<p class="socio-next">Próximo horário: <b>${dayLabel(nf.date).toLowerCase()}, ${fmt(nf.time)}</b></p>` : `<p class="socio-next">Sem horário livre nos próximos dias</p>`)(nextFree(s.id, corteDur()))}
@@ -370,7 +371,7 @@
     // arrastar o poste (ou tocar no trilho) rola a página
     let drag = null;
     pole.addEventListener("pointerdown", e => { const g = placePole(); drag = { y: e.clientY, s: scrollY, k: g.max / Math.max(1, g.track - g.h) }; pole.setPointerCapture(e.pointerId); rail.classList.add("drag"); e.preventDefault(); });
-    pole.addEventListener("pointermove", e => { if (drag) scrollTo(0, drag.s + (e.clientY - drag.y) * drag.k); });
+    pole.addEventListener("pointermove", e => { if (drag) scrollTo({ top: drag.s + (e.clientY - drag.y) * drag.k, behavior: "instant" }); });
     const stop = () => { drag = null; rail.classList.remove("drag"); };
     pole.addEventListener("pointerup", stop); pole.addEventListener("pointercancel", stop);
     rail.addEventListener("pointerdown", e => { if (e.target !== rail) return; const g = placePole(), r = rail.getBoundingClientRect(); scrollTo({ top: (e.clientY - r.top - g.h / 2) / Math.max(1, g.track - g.h) * g.max, behavior: reduce ? "auto" : "smooth" }); });

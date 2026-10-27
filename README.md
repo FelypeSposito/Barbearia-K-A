@@ -1,4 +1,4 @@
-# Kaique & Ângelo · base do site
+# Studio Kaique dos Corte · base do site
 
 Protótipo estático (HTML + CSS + JS puro, sem build). Abra `index.html` num servidor local (`python3 -m http.server`) ou suba a pasta no GitHub Pages / Vercel / Netlify.
 
