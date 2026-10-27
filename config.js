@@ -73,14 +73,20 @@ window.BARBEARIA_CONFIG = {
     }
   ],
 
-  // [CONFIRMAR] serviços e preços do Booksy
+  // Tabela do Booksy (out/2026). Duração em minutos. Quem faz cada serviço: [CONFIRMAR], hoje os dois fazem tudo
   servicos: [
-    { id: "corte",      nome: "Corte",                duracao: 40, preco: 45, socios: ["angelo", "kaique"] },
-    { id: "barba",      nome: "Barba",                duracao: 30, preco: 35, socios: ["angelo", "kaique"] },
-    { id: "combo",      nome: "Corte + Barba",        duracao: 70, preco: 75, socios: ["angelo", "kaique"], destaque: true },
-    { id: "sobrancelha",nome: "Sobrancelha",          duracao: 15, preco: 15, socios: ["angelo", "kaique"] },
-    { id: "pigmentacao",nome: "Pigmentação",          duracao: 30, preco: 30, socios: ["kaique"] },
-    { id: "freestyle",  nome: "Corte + Freestyle",    duracao: 60, preco: 60, socios: ["kaique"] }
+    { id: "combo-cavanhaque",      nome: "Combo: corte + cavanhaque + sobrancelha", duracao: 90, preco: 55, socios: ["angelo", "kaique"] },
+    { id: "combo",                 nome: "Combo: corte + barba + sobrancelha",      duracao: 90, preco: 70, socios: ["angelo", "kaique"], destaque: true },
+    { id: "corte",                 nome: "Corte social",                            duracao: 60, preco: 40, socios: ["angelo", "kaique"] },
+    { id: "corte-sobrancelha",     nome: "Corte social + sobrancelha",              duracao: 60, preco: 50, socios: ["angelo", "kaique"] },
+    { id: "zero",                  nome: "Corte na zero",                           duracao: 60, preco: 40, socios: ["angelo", "kaique"] },
+    { id: "zero-sobrancelha",      nome: "Corte na zero + sobrancelha",             duracao: 60, preco: 50, socios: ["angelo", "kaique"] },
+    { id: "navalhado",             nome: "Corte navalhado",                         duracao: 60, preco: 50, socios: ["angelo", "kaique"] },
+    { id: "navalhado-sobrancelha", nome: "Corte navalhado + sobrancelha",           duracao: 60, preco: 60, socios: ["angelo", "kaique"] },
+    { id: "barba",                 nome: "Barba",                                   duracao: 30, preco: 30, socios: ["angelo", "kaique"] },
+    { id: "cavanhaque",            nome: "Cavanhaque",                              duracao: 30, preco: 15, socios: ["angelo", "kaique"] },
+    { id: "penteado",              nome: "Penteado",                                duracao: 30, preco: 15, socios: ["angelo", "kaique"] },
+    { id: "alisamento",            nome: "Alisamento",                              duracao: 30, preco: 15, socios: ["angelo", "kaique"] }
   ],
 
   // Trabalhos: troque "foto" pelo caminho da imagem (ex.: "fotos/01.jpg")

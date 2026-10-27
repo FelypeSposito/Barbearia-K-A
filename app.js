@@ -27,6 +27,7 @@
   const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
   const today = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
   const brl = v => "R$ " + v.toFixed(0);
+  const durTxt = m => m < 60 ? m + " min" : Math.floor(m / 60) + "h" + (m % 60 ? String(m % 60).padStart(2, "0") : "");
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const hash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
   const dayLabel = ds => {
@@ -200,7 +201,7 @@
     $("#lista-servicos").innerHTML = cfg.servicos.map(s => {
       const quem = s.socios.length === cfg.socios.length ? "" : ", só com " + s.socios.map(id => socioById(id).nome).join(" e ");
       return `<li><button class="price${s.destaque ? " price-hl" : ""}" type="button" data-book-serv="${s.id}" aria-label="Agendar ${esc(s.nome)}">
-        <span class="price-n">${esc(s.nome)}<small>${s.duracao} min${quem}</small></span>
+        <span class="price-n">${esc(s.nome)}<small>${durTxt(s.duracao)}${quem}</small></span>
         <span class="price-dots" aria-hidden="true"></span>
         <span class="price-v"><small>R$</small>${s.preco}</span>
         <svg class="price-go" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -294,7 +295,7 @@
       const f = (per[s.id] || []).filter(t => t % 30 === 0);
       const folga = !(s.jornada[DK[d.getDay()]] || []).length;
       return `<div class="cal-socio"><span>${esc(s.nome)}</span><div class="times">${f.length ? f.map(t => `<button type="button" class="time" data-cal-time="${s.id}|${t}">${fmt(t)}</button>`).join("") : `<span class="off">${folga ? "De folga" : "Agenda cheia"}</span>`}</div></div>`;
-    }).join("") + `<p class="cal-note">Horários para corte (${corteDur()} min). Dá para trocar o serviço no próximo passo.</p>`;
+    }).join("") + `<p class="cal-note">Horários para corte (${durTxt(corteDur())}). Dá para trocar o serviço no próximo passo.</p>`;
   }
   function toggleCal(open) {
     const c = $("#cal"), b = $("#cal-toggle");
@@ -511,7 +512,7 @@
   function stepServico() {
     return `<div class="opt-list">${cfg.servicos.map(s => `<button type="button" class="opt" data-pick-serv="${s.id}" aria-pressed="${bk.servico === s.id}">
       <span class="o-t">${esc(s.nome)}</span>
-      <span class="o-r">${brl(s.preco)}<small>${s.duracao} min</small></span>
+      <span class="o-r">${brl(s.preco)}<small>${durTxt(s.duracao)}</small></span>
       ${s.socios.length === cfg.socios.length ? "" : '<span class="o-s">Só com ' + s.socios.map(id => socioById(id).nome).join(" e ") + "</span>"}</button>`).join("")}</div>`;
   }
 
@@ -567,7 +568,7 @@
     const chips = ["Mesmo da última vez", "Só aparar", "Vou levar foto de referência"];
     // só oferece os serviços que cabem nesse horário com esse profissional
     const cabem = cfg.servicos.filter(v => v.socios.includes(bk.assigned) && (v.id === bk.servico || freeSlots(bk.assigned, bk.date, v.duracao).includes(bk.time)));
-    const lista = bk.trocar ? `<div class="serv-pick" role="radiogroup" aria-label="Serviço">${cabem.map(v => `<button type="button" role="radio" aria-checked="${v.id === bk.servico}" data-swap-serv="${v.id}"><span>${esc(v.nome)}</span><small>${brl(v.preco)}, ${v.duracao} min</small></button>`).join("")}</div>` : "";
+    const lista = bk.trocar ? `<div class="serv-pick" role="radiogroup" aria-label="Serviço">${cabem.map(v => `<button type="button" role="radio" aria-checked="${v.id === bk.servico}" data-swap-serv="${v.id}"><span>${esc(v.nome)}</span><small>${brl(v.preco)}, ${durTxt(v.duracao)}</small></button>`).join("")}</div>` : "";
     // o pedido para o corte é opcional: fica recolhido até o cliente querer escrever
     const nota = (bk.nota || bk.notaAberta)
       ? `<div class="nota"><label class="lbl" for="bk-nota">Pedido para o corte (opcional)</label>
@@ -582,7 +583,7 @@
           <p class="confirma-t">${esc(sv.nome)} com ${esc(quem.nome)}</p>
           <p class="confirma-s">${dayLabel(bk.date)}, ${fmt(bk.time)}</p>
         </div>
-        <p class="confirma-v">${brl(sv.preco)}<small>${sv.duracao} min</small></p>
+        <p class="confirma-v">${brl(sv.preco)}<small>${durTxt(sv.duracao)}</small></p>
       </div>
       ${cabem.length > 1 && !bk.trocar ? '<button type="button" class="link-sm" data-act="troca">Trocar serviço</button>' : ""}
       ${lista}
@@ -679,7 +680,7 @@
   /* ================= MINHA CONTA ================= */
   const HIST = [
     { id: "h1", dias: 24, socio: "angelo", servico: "combo", nota: "Low fade na 0,5. Barba alinhada no pescoço.", obsBarbeiro: "Cabelo cresce rápido na nuca, voltar em 3 semanas." },
-    { id: "h2", dias: 52, socio: "kaique", servico: "freestyle", nota: "Risco duplo do lado direito.", obsBarbeiro: "Gostou do risco mais fino." },
+    { id: "h2", dias: 52, socio: "kaique", servico: "navalhado", nota: "Risco duplo do lado direito.", obsBarbeiro: "Gostou do risco mais fino." },
     { id: "h3", dias: 81, socio: "angelo", servico: "corte", nota: "Mid fade, tesoura em cima.", obsBarbeiro: "" }
   ];
   function renderConta() {
