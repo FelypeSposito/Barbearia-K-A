@@ -329,6 +329,7 @@
   }
   $("#menu-btn").onclick = e => { e.stopPropagation(); toggleMenu(); };
   $("#mnav").addEventListener("click", e => { if (e.target.closest("a")) toggleMenu(false); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#mnav").hidden) { toggleMenu(false); $("#menu-btn").focus(); } });
 
   /* bolinhas de posição nos carrosséis (celular) */
   function railDots(rail) {

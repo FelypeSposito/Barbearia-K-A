@@ -146,7 +146,6 @@ html::-webkit-scrollbar { width: 0; height: 0; }
   .pole::before, .pole::after { height: 7px; }
   .on-site .rail { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
 }
-}
 
 /* ============ 4. topo e calendário ============ */
 .topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: color-mix(in srgb, var(--paper) 86%, transparent); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); transition: box-shadow .3s var(--ease); }
