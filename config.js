@@ -6,12 +6,12 @@
    Itens marcados com [CONFIRMAR] são placeholders.
    ============================================================ */
 window.BARBEARIA_CONFIG = {
-  nome: "Kaique & Ângelo",            // [CONFIRMAR] nome oficial da barbearia (Booksy / logo)
-  nomeCurto: "Kaique e Ângelo",
+  nome: "Studio Kaique dos Corte",    // mesmo nome do Instagram @studio_kaiquedoscorte
+  nomeCurto: "Studio Kaique dos Corte",
   slogan: "Corte no detalhe. Horário no seu tempo.",
   cidade: "Zona Leste de SP",         // aparece como "na Zona Leste de SP" [CONFIRMAR bairro]
   endereco: "Rua Exemplo, 123, Centro", // [CONFIRMAR]
-  instagram: "@suabarbearia",         // [CONFIRMAR]
+  instagram: "@studio_kaiquedoscorte",
   whatsapp: "(11) 90000-0000",        // [CONFIRMAR]
   fotoPrincipal: "fotos/studio-logo.jpg", // foto grande do início (logo do @studio_kaiquedoscorte)
   booksyUrl: "https://booksy.com/pt-br/instant-experiences/widget/347412",
@@ -32,34 +32,14 @@ window.BARBEARIA_CONFIG = {
   // Jornada: dias seg..dom, cada dia com faixas [início, fim]. Dia sem faixa = folga.
   socios: [
     {
-      id: "angelo",
-      nome: "Ângelo",
-      desde: 2023,                               // Instagram: "Barbeiro desde 2023"
-      papel: "Sócio · Barbeiro",
-      instagram: "vn_barbeiiro",
-      foto: "fotos/angelo-retrato.jpg",
-      especialidades: ["Platinado", "Cacheado", "Moicano"],
-      bio: "Atende na Zona Leste e posta os cortes no Instagram como VN Barbeiro.",
-      googleCalendarId: "angelo@exemplo.com",    // usado na automação futura
-      jornada: {
-        seg: [],
-        ter: [["09:00", "12:00"], ["13:00", "19:00"]],
-        qua: [["09:00", "12:00"], ["13:00", "19:00"]],
-        qui: [["09:00", "12:00"], ["13:00", "20:00"]],
-        sex: [["09:00", "12:00"], ["13:00", "20:00"]],
-        sab: [["08:00", "16:00"]],
-        dom: []
-      }
-    },
-    {
       id: "kaique",
       nome: "Kaique",
       desde: 2018,                               // [CONFIRMAR]
-      papel: "Sócio · Barbeiro",
+      papel: "Dono do estúdio",
       instagram: "kaiquedoscorte",               // estúdio: @studio_kaiquedoscorte
       foto: "",                                  // sem foto boa ainda: mostra a inicial no lugar. Coloque aqui um retrato nítido (pelo menos 600px de largura)
       especialidades: ["Freestyle", "Navalhado", "Sobrancelha"],
-      bio: "O K do logo é dele. Toca o estúdio que leva o nome, o Studio Kaique dos Corte.", // [CONFIRMAR] contar como começou e o corte que é a marca dele
+      bio: "O estúdio leva o nome dele e o K do logo também. É quem toca a casa.", // [CONFIRMAR] contar como começou e o corte que é a marca dele
       googleCalendarId: "kaique@exemplo.com",
       jornada: {
         seg: [["10:00", "19:00"]],
@@ -70,17 +50,43 @@ window.BARBEARIA_CONFIG = {
         sab: [["08:00", "17:00"]],
         dom: []
       }
+    },
+    {
+      id: "angelo",
+      nome: "Ângelo",
+      desde: 2023,                               // Instagram: "Barbeiro desde 2023"
+      papel: "Sócio",
+      instagram: "vn_barbeiiro",
+      foto: "fotos/angelo-retrato.jpg",
+      especialidades: ["Platinado", "Cacheado", "Moicano"],
+      bio: "Sócio do Kaique no estúdio. Posta os cortes no Instagram como VN Barbeiro.",
+      googleCalendarId: "angelo@exemplo.com",    // usado na automação futura
+      jornada: {
+        seg: [],
+        ter: [["09:00", "12:00"], ["13:00", "19:00"]],
+        qua: [["09:00", "12:00"], ["13:00", "19:00"]],
+        qui: [["09:00", "12:00"], ["13:00", "20:00"]],
+        sex: [["09:00", "12:00"], ["13:00", "20:00"]],
+        sab: [["08:00", "16:00"]],
+        dom: []
+      }
     }
   ],
 
-  // [CONFIRMAR] serviços e preços do Booksy
+  // Tabela do Booksy (out/2026). Duração em minutos. Quem faz cada serviço: [CONFIRMAR], hoje os dois fazem tudo
   servicos: [
-    { id: "corte",      nome: "Corte",                duracao: 40, preco: 45, socios: ["angelo", "kaique"] },
-    { id: "barba",      nome: "Barba",                duracao: 30, preco: 35, socios: ["angelo", "kaique"] },
-    { id: "combo",      nome: "Corte + Barba",        duracao: 70, preco: 75, socios: ["angelo", "kaique"], destaque: true },
-    { id: "sobrancelha",nome: "Sobrancelha",          duracao: 15, preco: 15, socios: ["angelo", "kaique"] },
-    { id: "pigmentacao",nome: "Pigmentação",          duracao: 30, preco: 30, socios: ["kaique"] },
-    { id: "freestyle",  nome: "Corte + Freestyle",    duracao: 60, preco: 60, socios: ["kaique"] }
+    { id: "combo-cavanhaque",      nome: "Combo: corte + cavanhaque + sobrancelha", duracao: 90, preco: 55, socios: ["angelo", "kaique"] },
+    { id: "combo",                 nome: "Combo: corte + barba + sobrancelha",      duracao: 90, preco: 70, socios: ["angelo", "kaique"], destaque: true },
+    { id: "corte",                 nome: "Corte social",                            duracao: 60, preco: 40, socios: ["angelo", "kaique"] },
+    { id: "corte-sobrancelha",     nome: "Corte social + sobrancelha",              duracao: 60, preco: 50, socios: ["angelo", "kaique"] },
+    { id: "zero",                  nome: "Corte na zero",                           duracao: 60, preco: 40, socios: ["angelo", "kaique"] },
+    { id: "zero-sobrancelha",      nome: "Corte na zero + sobrancelha",             duracao: 60, preco: 50, socios: ["angelo", "kaique"] },
+    { id: "navalhado",             nome: "Corte navalhado",                         duracao: 60, preco: 50, socios: ["angelo", "kaique"] },
+    { id: "navalhado-sobrancelha", nome: "Corte navalhado + sobrancelha",           duracao: 60, preco: 60, socios: ["angelo", "kaique"] },
+    { id: "barba",                 nome: "Barba",                                   duracao: 30, preco: 30, socios: ["angelo", "kaique"] },
+    { id: "cavanhaque",            nome: "Cavanhaque",                              duracao: 30, preco: 15, socios: ["angelo", "kaique"] },
+    { id: "penteado",              nome: "Penteado",                                duracao: 30, preco: 15, socios: ["angelo", "kaique"] },
+    { id: "alisamento",            nome: "Alisamento",                              duracao: 30, preco: 15, socios: ["angelo", "kaique"] }
   ],
 
   // Trabalhos: troque "foto" pelo caminho da imagem (ex.: "fotos/01.jpg")

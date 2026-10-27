@@ -123,18 +123,27 @@ html { scrollbar-width: none; }
 html::-webkit-scrollbar { width: 0; height: 0; }
 .rail { position: fixed; z-index: 45; top: calc(env(safe-area-inset-top, 0px) + 84px); bottom: 16px; right: env(safe-area-inset-right, 0px); width: 20px; cursor: pointer; touch-action: none; }
 .rail.off { display: none; }
-.pole { position: absolute; top: 0; right: 7px; width: 7px; height: 120px; overflow: hidden; background: var(--pole-white); box-shadow: 0 0 0 1px var(--pole-edge); cursor: grab; will-change: transform; transition: width .25s var(--ease), right .25s var(--ease); }
+/* o poste: listras giram por dentro, com um brilho vertical fixo por cima que dá volume de cilindro */
+.pole { position: absolute; top: 0; right: 6px; width: 8px; height: 120px; overflow: hidden; background: var(--pole-white); box-shadow: 0 0 0 1px var(--pole-edge); cursor: grab; touch-action: none; will-change: transform; transition: width .25s var(--ease), right .25s var(--ease); }
 .rail:hover .pole, .rail.drag .pole { width: 10px; right: 5px; }
 .rail.drag .pole { cursor: grabbing; }
-.pole::before, .pole::after { content: ""; position: absolute; left: 0; right: 0; height: 9px; background: #0B0B0A; z-index: 1; }
-.pole::before { top: 0; box-shadow: 0 2px 0 var(--pole-white), 0 3px 0 #0B0B0A; }
-.pole::after { bottom: 0; box-shadow: 0 -2px 0 var(--pole-white), 0 -3px 0 #0B0B0A; }
-.pole-stripes { position: absolute; left: 0; right: 0; top: -40px; bottom: -40px; background: repeating-linear-gradient(-60deg, var(--accent) 0 6px, var(--pole-white) 6px 10px, #0B0B0A 10px 13px, var(--pole-white) 13px 20px); will-change: transform; }
-.sheet-open .rail, .menu-open .rail { opacity: 0; pointer-events: none; }
+/* tampas pretas com um friso de metal */
+.pole::before, .pole::after { content: ""; position: absolute; left: 0; right: 0; height: 8px; z-index: 1; background: linear-gradient(90deg, #000, #45433F 45%, #000); }
+.pole::before { top: 0; border-bottom: 1px solid #8C8A85; }
+.pole::after { bottom: 0; border-top: 1px solid #8C8A85; }
+.pole-stripes { position: absolute; left: 0; right: 0; top: -40px; bottom: -40px; will-change: transform;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, .32), rgba(0, 0, 0, 0) 32%, rgba(255, 255, 255, .38) 50%, rgba(0, 0, 0, 0) 68%, rgba(0, 0, 0, .34)),
+    repeating-linear-gradient(-60deg, var(--accent) 0 6px, var(--pole-white) 6px 10px, #0B0B0A 10px 13px, var(--pole-white) 13px 20px); }
+.sheet-open .rail, .menu-open .rail, .cal-open .rail { opacity: 0; pointer-events: none; }
 @media (max-width: 860px) {
-  .rail { top: calc(env(safe-area-inset-top, 0px) + 72px); width: 14px; }
-  .pole { width: 5px; right: 4px; }
-  .pole::before, .pole::after { height: 6px; }
+  /* celular: o trilho não pega toque (a lateral da tela continua rolando normal); só o poste,
+     com área de toque de 20px graças às bordas transparentes, sem ficar mais largo de ver */
+  .rail { top: calc(env(safe-area-inset-top, 0px) + 72px); width: 20px; pointer-events: none; }
+  .pole { right: 1px; width: 18px; border-inline: 5px solid transparent; background-clip: padding-box; box-shadow: none; pointer-events: auto; transition: none; }
+  .rail:hover .pole, .rail.drag .pole { width: 18px; right: 1px; }
+  .pole-stripes { box-shadow: inset 0 0 0 1px var(--pole-edge); }
+  .pole::before, .pole::after { height: 7px; }
   .on-site .rail { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
 }
 
@@ -317,6 +326,7 @@ button.e-time:active { background: var(--accent); border-color: var(--accent); c
 .socio-photo { grid-row: 1 / span 5; align-self: start; aspect-ratio: 4 / 5; overflow: hidden; }
 .socio-photo .ph.has-img { background-position: center 15%; }
 .socio-name { font-size: var(--fs-6); line-height: 1; }
+.socio-papel { margin-top: calc(-1 * var(--s-1)); font-size: var(--fs-0); color: var(--accent-text) !important; }
 .socio p { max-width: 46ch; font-size: var(--fs-1); line-height: 1.55; color: var(--grey); }
 .socio-next { color: var(--ink) !important; }
 .socio-next b { font-weight: 500; }
@@ -334,11 +344,13 @@ button.e-time:active { background: var(--accent); border-color: var(--accent); c
    No tablet, grade de duas colunas; no celular, carrossel com swipe. */
 .works { display: flex; gap: 10px; height: clamp(440px, 46vw, 600px); }
 .work { position: relative; display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: var(--s-2); flex: 1 1 0; min-width: 0; margin: 0; transition: flex-grow .8s var(--ease), opacity .5s var(--ease), filter .5s var(--ease); }
-.works:not(:hover) .work:first-child, .work:hover { flex-grow: 2.4; }
+/* a primeira fica aberta enquanto nenhuma fatia está sob o mouse (não basta o mouse estar na grade:
+   no vão de 10px entre fatias todas fechariam e a grade daria um tranco) */
+.works:not(:has(.work:hover)) .work:first-child, .work:hover { flex-grow: 2.4; }
 .work-img { min-height: 0; overflow: hidden; background: var(--paper-2); }
 /* a legenda só aparece na fatia aberta: nas fechadas ela ficaria cortada */
 .work figcaption { overflow: hidden; font-size: var(--fs-0); color: var(--grey); white-space: nowrap; text-overflow: ellipsis; opacity: 0; transition: opacity .5s var(--ease); }
-.works:not(:hover) .work:first-child figcaption, .work:hover figcaption { opacity: 1; }
+.works:not(:has(.work:hover)) .work:first-child figcaption, .work:hover figcaption { opacity: 1; }
 /* teclado: a fatia com foco abre igual à do mouse */
 .work:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 3px; }
 .works:has(.work:focus-visible) .work:first-child:not(:focus-visible):not(:hover) { flex-grow: 1; }
@@ -550,6 +562,9 @@ textarea, input { font-size: 16px; } /* 16px evita o zoom do iPhone ao focar */
   .js [data-reveal] > * { opacity: 0; transform: translateY(24px); transition: opacity .8s var(--ease), transform .9s var(--ease); transition-delay: calc(var(--i, 0) * 70ms); }
   .js [data-reveal].in > * { opacity: 1; transform: none; }
   .js [data-reveal].in > .work.dim { opacity: .3; }
+  /* a regra acima trocaria toda a transição das fatias de Cortes e, durante a entrada, elas abririam
+     sem animar. Aqui a entrada continua com atraso e a abertura (flex-grow) anima desde o início. */
+  .js [data-reveal] > .work { transition: opacity .8s var(--ease) calc(var(--i, 0) * 70ms), transform .9s var(--ease) calc(var(--i, 0) * 70ms), flex-grow .8s var(--ease), filter .5s var(--ease); }
   [data-reveal] > :nth-child(2) { --i: 1; }
   [data-reveal] > :nth-child(3) { --i: 2; }
   [data-reveal] > :nth-child(4) { --i: 3; }
