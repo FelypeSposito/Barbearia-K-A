@@ -334,11 +334,13 @@ button.e-time:active { background: var(--accent); border-color: var(--accent); c
    No tablet, grade de duas colunas; no celular, carrossel com swipe. */
 .works { display: flex; gap: 10px; height: clamp(440px, 46vw, 600px); }
 .work { position: relative; display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: var(--s-2); flex: 1 1 0; min-width: 0; margin: 0; transition: flex-grow .8s var(--ease), opacity .5s var(--ease), filter .5s var(--ease); }
-.works:not(:hover) .work:first-child, .work:hover { flex-grow: 2.4; }
+/* a primeira fica aberta enquanto nenhuma fatia está sob o mouse (não basta o mouse estar na grade:
+   no vão de 10px entre fatias todas fechariam e a grade daria um tranco) */
+.works:not(:has(.work:hover)) .work:first-child, .work:hover { flex-grow: 2.4; }
 .work-img { min-height: 0; overflow: hidden; background: var(--paper-2); }
 /* a legenda só aparece na fatia aberta: nas fechadas ela ficaria cortada */
 .work figcaption { overflow: hidden; font-size: var(--fs-0); color: var(--grey); white-space: nowrap; text-overflow: ellipsis; opacity: 0; transition: opacity .5s var(--ease); }
-.works:not(:hover) .work:first-child figcaption, .work:hover figcaption { opacity: 1; }
+.works:not(:has(.work:hover)) .work:first-child figcaption, .work:hover figcaption { opacity: 1; }
 /* teclado: a fatia com foco abre igual à do mouse */
 .work:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 3px; }
 .works:has(.work:focus-visible) .work:first-child:not(:focus-visible):not(:hover) { flex-grow: 1; }
@@ -550,6 +552,9 @@ textarea, input { font-size: 16px; } /* 16px evita o zoom do iPhone ao focar */
   .js [data-reveal] > * { opacity: 0; transform: translateY(24px); transition: opacity .8s var(--ease), transform .9s var(--ease); transition-delay: calc(var(--i, 0) * 70ms); }
   .js [data-reveal].in > * { opacity: 1; transform: none; }
   .js [data-reveal].in > .work.dim { opacity: .3; }
+  /* a regra acima trocaria toda a transição das fatias de Cortes e, durante a entrada, elas abririam
+     sem animar. Aqui a entrada continua com atraso e a abertura (flex-grow) anima desde o início. */
+  .js [data-reveal] > .work { transition: opacity .8s var(--ease) calc(var(--i, 0) * 70ms), transform .9s var(--ease) calc(var(--i, 0) * 70ms), flex-grow .8s var(--ease), filter .5s var(--ease); }
   [data-reveal] > :nth-child(2) { --i: 1; }
   [data-reveal] > :nth-child(3) { --i: 2; }
   [data-reveal] > :nth-child(4) { --i: 3; }
