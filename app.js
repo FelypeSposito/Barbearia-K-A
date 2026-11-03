@@ -161,7 +161,7 @@
     const s = socioById(w.socio);
     return `<figure class="work" data-socio="${w.socio}">
       <div class="work-img">${phHtml("Foto " + (i + 1), w.foto)}</div>
-      <figcaption><b>${esc(w.titulo)}</b>, por ${esc(s.nome)}</figcaption>
+      <figcaption><b>${esc(w.titulo)}</b>por ${esc(s.nome)}</figcaption>
     </figure>`;
   }
   function renderWorks() {

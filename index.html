@@ -7,7 +7,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Grenze+Gotisch:wght@300..600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Grenze+Gotisch:wght@400..600&family=Kaushan+Script&display=swap">
 <link rel="stylesheet" href="styles.css">
 <script>document.documentElement.classList.add("js")</script>
 </head>
@@ -62,12 +62,19 @@
 <!-- ======================= SITE ======================= -->
 <main id="view-site" class="view">
 
-  <!-- abertura: texto à esquerda, foto de corte grande à direita. A agenda do dia fica sobre a foto:
-       horário ocupado riscado, livre é um botão. -->
+  <!-- abertura: a parede preta do salão, com o forro de madeira e a fita de LED em cima, o nome pintado
+       em letra cursiva branca e o poste do lado. A foto do corte fica no espelho, com a ring light atrás.
+       A agenda do dia fica no quadro branco: horário ocupado riscado, livre é um botão. -->
   <section class="hero" id="inicio">
+    <div class="forro" aria-hidden="true"></div>
     <div class="wrap">
       <div class="hero-in">
         <div class="hero-text">
+          <p class="placa" aria-label="Studio Kaique dos Corte">
+            <span class="placa-nome" aria-hidden="true">Kaique dos Corte</span>
+            <span class="placa-sub" aria-hidden="true">Studio · Barbearia</span>
+            <span class="placa-poste" aria-hidden="true"></span>
+          </p>
           <h1 class="hero-title">Corte na régua, sem ficar esperando.</h1>
           <p class="lead">O estúdio do Kaique, com o Ângelo de sócio, na <span data-bind="cidade">Zona Leste</span>. Toca num horário livre e tá marcado.</p>
           <div class="hero-actions">
@@ -77,13 +84,15 @@
           <div class="espelho" id="vagas" aria-live="polite"></div>
         </div>
         <div class="hero-visual">
+          <div class="ring" aria-hidden="true"></div>
           <div class="hero-cover"><img src="fotos/angelo-4.jpg" width="900" height="1125" alt="Degradê em cabelo cacheado, corte do Ângelo" fetchpriority="high"></div>
+          <img class="adesivo" src="fotos/studio-logo.jpg" width="120" height="120" alt="" aria-hidden="true">
         </div>
       </div>
     </div>
   </section>
 
-  <!-- preços como cardápio: todos iguais, só o combo em destaque -->
+  <!-- preços: a tabela impressa em sulfite e colada com fita na parede de cimento. Só o combo em vermelho -->
   <section class="block" id="precos">
     <div class="wrap">
       <div class="lista-grid">
@@ -92,7 +101,10 @@
           <p class="muted">O preço é esse, sem surpresa no final. Toca no serviço pra marcar.</p>
           <p class="price-foot"><a class="link" id="booksy-link" href="#" target="_blank" rel="noopener">Se preferir, ainda dá pelo Booksy.</a></p>
         </div>
-        <ul class="prices" id="lista-servicos" data-reveal></ul>
+        <div class="folha" data-reveal>
+          <div class="folha-head"><strong>Tabela de preços</strong><span>Studio Kaique dos Corte</span></div>
+          <ul class="prices" id="lista-servicos"></ul>
+        </div>
       </div>
     </div>
   </section>
@@ -114,7 +126,8 @@
         <h2 class="h2">Cortes</h2>
         <div class="seg" role="tablist" aria-label="Filtrar por sócio" id="filtro-trabalhos"></div>
       </div>
-      <div class="works" id="works" data-reveal></div>
+      <!-- o cartaz de cortes colado na parede, igual ao de modelos de corte dos salões -->
+      <div class="cartaz" data-reveal><div class="works" id="works"></div></div>
     </div>
   </section>
 
@@ -158,6 +171,7 @@
         </div>
       </div>
     </div>
+    <!-- o piso branco, com cabelo cortado no chão -->
     <footer class="footer">
       <div class="wrap foot-in">
         <span data-bind="nome">Studio Kaique dos Corte</span>
