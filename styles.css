@@ -640,3 +640,6 @@ textarea, input { font-size: 16px; } /* 16px evita o zoom do iPhone ao focar */
   .btn-sm { min-height: 44px; }
   .socio-links .btn-sm { min-height: 44px; }
 }
+
+/* aviso no topo do passo de serviço quando o cliente já tocou num horário */
+.step-note { margin: 0 0 var(--s-3); font-size: var(--fs-1); color: var(--grey); }

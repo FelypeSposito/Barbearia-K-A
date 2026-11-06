@@ -263,7 +263,7 @@
   document.addEventListener("click", e => {
     const t = e.target.closest("[data-quick]"); if (!t) return;
     const [id, ds, tm] = t.dataset.quick.split("|");
-    openBooking({ servico: (servById("corte") || cfg.servicos[0]).id, socio: id, assigned: id, date: ds, time: +tm, step: 3 });
+    openBooking({ socio: id, assigned: id, date: ds, time: +tm, fromSlot: true });
   });
   function renderCal() {
     const m = cal.month, y = m.getFullYear(), mo = m.getMonth();
@@ -313,7 +313,7 @@
     if (t.dataset.calTime) {
       const [id, tm] = t.dataset.calTime.split("|");
       toggleCal(false);
-      openBooking({ servico: (servById("corte") || cfg.servicos[0]).id, socio: id, assigned: id, date: cal.sel, time: +tm, step: 3 });
+      openBooking({ socio: id, assigned: id, date: cal.sel, time: +tm, fromSlot: true });
     }
   });
   document.addEventListener("click", e => { if (!$("#cal").hidden && !e.target.closest("#cal, #cal-toggle, [data-cal-open]")) toggleCal(false); });
@@ -528,7 +528,10 @@
   }
 
   function stepServico() {
-    return `<div class="opt-list">${cfg.servicos.map(s => `<button type="button" class="opt" data-pick-serv="${s.id}" aria-pressed="${bk.servico === s.id}">
+    // veio de um horário tocado: mostra só o que esse barbeiro faz, com o horário escolhido no topo
+    const lista = bk.fromSlot ? cfg.servicos.filter(s => s.socios.includes(bk.socio)) : cfg.servicos;
+    const topo = bk.fromSlot ? `<p class="step-note">${esc(socioById(bk.socio).nome)}, ${esc(dayLabel(bk.date).toLowerCase())} às ${fmt(bk.time)}. Agora escolha o serviço.</p>` : "";
+    return topo + `<div class="opt-list">${lista.map(s => `<button type="button" class="opt" data-pick-serv="${s.id}" aria-pressed="${bk.servico === s.id}">
       <span class="o-t">${esc(s.nome)}</span>
       <span class="o-r">${brl(s.preco)}<small>${durTxt(s.duracao)}</small></span>
       ${s.socios.length === cfg.socios.length ? "" : '<span class="o-s">Só com ' + s.socios.map(id => socioById(id).nome).join(" e ") + "</span>"}</button>`).join("")}</div>`;
@@ -641,7 +644,17 @@
   $("#sheet").addEventListener("click", e => {
     const t = e.target.closest("button, a"); if (!t) return;
     const d = t.dataset;
-    if (d.pickServ) { bk.servico = d.pickServ; const sv = servById(bk.servico); if (bk.socio && bk.socio !== "any" && !sv.socios.includes(bk.socio)) bk.socio = null; bk.time = null; bk.step = bk.socio ? 2 : 1; renderStep(); return; }
+    if (d.pickServ) {
+      bk.servico = d.pickServ; const sv = servById(bk.servico);
+      if (bk.fromSlot) {
+        // o horário tocado continua valendo se o serviço cabe nele; se não cabe (serviço mais longo),
+        // abre os horários do mesmo dia com o mesmo barbeiro
+        bk.fromSlot = false;
+        if (freeSlots(bk.socio, bk.date, sv.duracao).includes(bk.time)) { bk.step = 3; renderStep(); return; }
+        bk.time = null; bk.assigned = null; bk.step = 2; renderStep(); return;
+      }
+      if (bk.socio && bk.socio !== "any" && !sv.socios.includes(bk.socio)) bk.socio = null; bk.time = null; bk.step = bk.socio ? 2 : 1; renderStep(); return;
+    }
     if (d.pickSocio) { bk.socio = d.pickSocio; bk.time = null; bk.assigned = null; bk.step = 2; renderStep(); return; }
     if (d.pickDate) { bk.date = d.pickDate; bk.time = null; bk.assigned = null; const y = $("#sheet-body").scrollTop; renderStep(); $(".step-anim").classList.remove("step-anim"); $("#sheet-body").scrollTop = y; return; }
     if (d.pickTime) {
