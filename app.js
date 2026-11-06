@@ -361,7 +361,11 @@
   function initScroll() {
     const media = $("[data-parallax]"), bar = $("#topbar"), fab = $("#mbar"), photo = $("#inicio"), stripes = $("#pole-stripes"), rail = $("#rail"), pole = $("#pole");
     // o poste é o "polegar" da barra de rolagem: tamanho proporcional à tela, posição = quanto já rolou
+    let drag = null;
     const placePole = () => {
+      // durante o arrasto quem manda no poste é o dedo (ver pointermove); recalcular aqui, com a barra de
+      // endereço do celular mudando a altura da tela, fazia o poste pular e "brigar" com o dedo
+      if (drag) return drag.g;
       const doc = document.documentElement.scrollHeight, vh = innerHeight, track = rail.clientHeight;
       const h = Math.max(64, Math.min(track * 0.5, track * vh / doc));
       const max = Math.max(1, doc - vh);
@@ -370,11 +374,20 @@
       rail.classList.toggle("off", doc <= vh + 4);
       return { h, max, track };
     };
-    // arrastar o poste (ou tocar no trilho) rola a página
-    let drag = null;
-    pole.addEventListener("pointerdown", e => { const g = placePole(); drag = { y: e.clientY, s: scrollY, k: g.max / Math.max(1, g.track - g.h) }; pole.setPointerCapture(e.pointerId); rail.classList.add("drag"); e.preventDefault(); });
-    pole.addEventListener("pointermove", e => { if (drag) scrollTo({ top: drag.s + (e.clientY - drag.y) * drag.k, behavior: "instant" }); });
-    const stop = () => { drag = null; rail.classList.remove("drag"); };
+    // arrastar o poste (ou tocar no trilho) rola a página. O poste fica colado no dedo (move na hora,
+    // sem esperar o evento de rolagem) e a página acompanha a posição dele
+    pole.addEventListener("pointerdown", e => {
+      const g = placePole(), room = Math.max(1, g.track - g.h);
+      drag = { y: e.clientY, p: room * Math.min(1, scrollY / g.max), room, g };
+      pole.setPointerCapture(e.pointerId); rail.classList.add("drag"); e.preventDefault();
+    });
+    pole.addEventListener("pointermove", e => {
+      if (!drag) return;
+      const pos = Math.max(0, Math.min(drag.room, drag.p + e.clientY - drag.y));
+      pole.style.transform = `translateY(${pos}px)`;
+      scrollTo({ top: pos / drag.room * drag.g.max, behavior: "instant" });
+    });
+    const stop = () => { drag = null; rail.classList.remove("drag"); placePole(); };
     pole.addEventListener("pointerup", stop); pole.addEventListener("pointercancel", stop);
     rail.addEventListener("pointerdown", e => { if (e.target !== rail) return; const g = placePole(), r = rail.getBoundingClientRect(); scrollTo({ top: (e.clientY - r.top - g.h / 2) / Math.max(1, g.track - g.h) * g.max, behavior: reduce ? "auto" : "smooth" }); });
     addEventListener("resize", placePole);
@@ -389,6 +402,11 @@
     };
     // parallax: cada [data-speed] anda conforme a distância do centro da tela; fotos andam dentro da moldura
     const mob = matchMedia("(max-width: 760px)");
+    // retratos: onde o navegador tem animação ligada à rolagem (CSS animation-timeline), o CSS faz o
+    // parallax fora da thread principal, sem tremer. Sem isso, só no computador: no celular o JS
+    // chega um quadro atrasado em relação à rolagem e a barra de endereço muda a altura da tela
+    const cssDrift = !!(window.CSS && CSS.supports && CSS.supports("animation-timeline: view()"));
+    const jsDrift = !cssDrift && matchMedia("(hover: hover) and (pointer: fine)").matches;
     const parallax = () => {
       const k = mob.matches ? 0.5 : 1, mid = innerHeight / 2;
       $$("#view-site [data-speed]").forEach(el => {
@@ -397,7 +415,7 @@
         const d = (r.top + r.height / 2 - mid) * el.dataset.speed * k;
         el.style.translate = el.dataset.axis === "x" ? `${d}px 0` : `0 ${d}px`;
       });
-      $$("#view-site .work-img .ph, #view-site .socio-photo .ph").forEach(el => {
+      if (jsDrift) $$("#view-site .work-img .ph, #view-site .socio-photo .ph").forEach(el => {
         const r = el.parentElement.getBoundingClientRect();
         if (r.bottom < 0 || r.top > innerHeight) return;
         const room = r.height * 0.05;
