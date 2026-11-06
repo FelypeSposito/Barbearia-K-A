@@ -263,7 +263,7 @@
   document.addEventListener("click", e => {
     const t = e.target.closest("[data-quick]"); if (!t) return;
     const [id, ds, tm] = t.dataset.quick.split("|");
-    openBooking({ servico: (servById("corte") || cfg.servicos[0]).id, socio: id, assigned: id, date: ds, time: +tm, step: 3 });
+    openBooking({ socio: id, assigned: id, date: ds, time: +tm, fromSlot: true });
   });
   function renderCal() {
     const m = cal.month, y = m.getFullYear(), mo = m.getMonth();
@@ -313,7 +313,7 @@
     if (t.dataset.calTime) {
       const [id, tm] = t.dataset.calTime.split("|");
       toggleCal(false);
-      openBooking({ servico: (servById("corte") || cfg.servicos[0]).id, socio: id, assigned: id, date: cal.sel, time: +tm, step: 3 });
+      openBooking({ socio: id, assigned: id, date: cal.sel, time: +tm, fromSlot: true });
     }
   });
   document.addEventListener("click", e => { if (!$("#cal").hidden && !e.target.closest("#cal, #cal-toggle, [data-cal-open]")) toggleCal(false); });
@@ -361,7 +361,11 @@
   function initScroll() {
     const media = $("[data-parallax]"), bar = $("#topbar"), fab = $("#mbar"), photo = $("#inicio"), stripes = $("#pole-stripes"), rail = $("#rail"), pole = $("#pole");
     // o poste é o "polegar" da barra de rolagem: tamanho proporcional à tela, posição = quanto já rolou
+    let drag = null;
     const placePole = () => {
+      // durante o arrasto quem manda no poste é o dedo (ver pointermove); recalcular aqui, com a barra de
+      // endereço do celular mudando a altura da tela, fazia o poste pular e "brigar" com o dedo
+      if (drag) return drag.g;
       const doc = document.documentElement.scrollHeight, vh = innerHeight, track = rail.clientHeight;
       const h = Math.max(64, Math.min(track * 0.5, track * vh / doc));
       const max = Math.max(1, doc - vh);
@@ -370,11 +374,20 @@
       rail.classList.toggle("off", doc <= vh + 4);
       return { h, max, track };
     };
-    // arrastar o poste (ou tocar no trilho) rola a página
-    let drag = null;
-    pole.addEventListener("pointerdown", e => { const g = placePole(); drag = { y: e.clientY, s: scrollY, k: g.max / Math.max(1, g.track - g.h) }; pole.setPointerCapture(e.pointerId); rail.classList.add("drag"); e.preventDefault(); });
-    pole.addEventListener("pointermove", e => { if (drag) scrollTo({ top: drag.s + (e.clientY - drag.y) * drag.k, behavior: "instant" }); });
-    const stop = () => { drag = null; rail.classList.remove("drag"); };
+    // arrastar o poste (ou tocar no trilho) rola a página. O poste fica colado no dedo (move na hora,
+    // sem esperar o evento de rolagem) e a página acompanha a posição dele
+    pole.addEventListener("pointerdown", e => {
+      const g = placePole(), room = Math.max(1, g.track - g.h);
+      drag = { y: e.clientY, p: room * Math.min(1, scrollY / g.max), room, g };
+      pole.setPointerCapture(e.pointerId); rail.classList.add("drag"); e.preventDefault();
+    });
+    pole.addEventListener("pointermove", e => {
+      if (!drag) return;
+      const pos = Math.max(0, Math.min(drag.room, drag.p + e.clientY - drag.y));
+      pole.style.transform = `translateY(${pos}px)`;
+      scrollTo({ top: pos / drag.room * drag.g.max, behavior: "instant" });
+    });
+    const stop = () => { drag = null; rail.classList.remove("drag"); placePole(); };
     pole.addEventListener("pointerup", stop); pole.addEventListener("pointercancel", stop);
     rail.addEventListener("pointerdown", e => { if (e.target !== rail) return; const g = placePole(), r = rail.getBoundingClientRect(); scrollTo({ top: (e.clientY - r.top - g.h / 2) / Math.max(1, g.track - g.h) * g.max, behavior: reduce ? "auto" : "smooth" }); });
     addEventListener("resize", placePole);
@@ -389,6 +402,11 @@
     };
     // parallax: cada [data-speed] anda conforme a distância do centro da tela; fotos andam dentro da moldura
     const mob = matchMedia("(max-width: 760px)");
+    // retratos: onde o navegador tem animação ligada à rolagem (CSS animation-timeline), o CSS faz o
+    // parallax fora da thread principal, sem tremer. Sem isso, só no computador: no celular o JS
+    // chega um quadro atrasado em relação à rolagem e a barra de endereço muda a altura da tela
+    const cssDrift = !!(window.CSS && CSS.supports && CSS.supports("animation-timeline: view()"));
+    const jsDrift = !cssDrift && matchMedia("(hover: hover) and (pointer: fine)").matches;
     const parallax = () => {
       const k = mob.matches ? 0.5 : 1, mid = innerHeight / 2;
       $$("#view-site [data-speed]").forEach(el => {
@@ -397,7 +415,7 @@
         const d = (r.top + r.height / 2 - mid) * el.dataset.speed * k;
         el.style.translate = el.dataset.axis === "x" ? `${d}px 0` : `0 ${d}px`;
       });
-      $$("#view-site .work-img .ph, #view-site .socio-photo .ph").forEach(el => {
+      if (jsDrift) $$("#view-site .work-img .ph, #view-site .socio-photo .ph").forEach(el => {
         const r = el.parentElement.getBoundingClientRect();
         if (r.bottom < 0 || r.top > innerHeight) return;
         const room = r.height * 0.05;
@@ -510,7 +528,10 @@
   }
 
   function stepServico() {
-    return `<div class="opt-list">${cfg.servicos.map(s => `<button type="button" class="opt" data-pick-serv="${s.id}" aria-pressed="${bk.servico === s.id}">
+    // veio de um horário tocado: mostra só o que esse barbeiro faz, com o horário escolhido no topo
+    const lista = bk.fromSlot ? cfg.servicos.filter(s => s.socios.includes(bk.socio)) : cfg.servicos;
+    const topo = bk.fromSlot ? `<p class="step-note">${esc(socioById(bk.socio).nome)}, ${esc(dayLabel(bk.date).toLowerCase())} às ${fmt(bk.time)}. Agora escolha o serviço.</p>` : "";
+    return topo + `<div class="opt-list">${lista.map(s => `<button type="button" class="opt" data-pick-serv="${s.id}" aria-pressed="${bk.servico === s.id}">
       <span class="o-t">${esc(s.nome)}</span>
       <span class="o-r">${brl(s.preco)}<small>${durTxt(s.duracao)}</small></span>
       ${s.socios.length === cfg.socios.length ? "" : '<span class="o-s">Só com ' + s.socios.map(id => socioById(id).nome).join(" e ") + "</span>"}</button>`).join("")}</div>`;
@@ -623,7 +644,17 @@
   $("#sheet").addEventListener("click", e => {
     const t = e.target.closest("button, a"); if (!t) return;
     const d = t.dataset;
-    if (d.pickServ) { bk.servico = d.pickServ; const sv = servById(bk.servico); if (bk.socio && bk.socio !== "any" && !sv.socios.includes(bk.socio)) bk.socio = null; bk.time = null; bk.step = bk.socio ? 2 : 1; renderStep(); return; }
+    if (d.pickServ) {
+      bk.servico = d.pickServ; const sv = servById(bk.servico);
+      if (bk.fromSlot) {
+        // o horário tocado continua valendo se o serviço cabe nele; se não cabe (serviço mais longo),
+        // abre os horários do mesmo dia com o mesmo barbeiro
+        bk.fromSlot = false;
+        if (freeSlots(bk.socio, bk.date, sv.duracao).includes(bk.time)) { bk.step = 3; renderStep(); return; }
+        bk.time = null; bk.assigned = null; bk.step = 2; renderStep(); return;
+      }
+      if (bk.socio && bk.socio !== "any" && !sv.socios.includes(bk.socio)) bk.socio = null; bk.time = null; bk.step = bk.socio ? 2 : 1; renderStep(); return;
+    }
     if (d.pickSocio) { bk.socio = d.pickSocio; bk.time = null; bk.assigned = null; bk.step = 2; renderStep(); return; }
     if (d.pickDate) { bk.date = d.pickDate; bk.time = null; bk.assigned = null; const y = $("#sheet-body").scrollTop; renderStep(); $(".step-anim").classList.remove("step-anim"); $("#sheet-body").scrollTop = y; return; }
     if (d.pickTime) {
